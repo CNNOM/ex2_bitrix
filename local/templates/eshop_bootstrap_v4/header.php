@@ -12,7 +12,8 @@ $theme = COption::GetOptionString("main", "wizard_eshop_bootstrap_theme_id", "gr
 
 $curPage = $APPLICATION->GetCurPage(true);
 
-?><!DOCTYPE html>
+?>
+<!DOCTYPE html>
 <html xml:lang="<?=LANGUAGE_ID?>" lang="<?=LANGUAGE_ID?>">
 <head>
 	<title><?$APPLICATION->ShowTitle()?></title>
@@ -23,11 +24,6 @@ $curPage = $APPLICATION->GetCurPage(true);
 </head>
 <body class="bx-background-image bx-theme-<?=$theme?>" <?$APPLICATION->ShowProperty("backgroundImage");?>>
 <div id="panel"><? $APPLICATION->ShowPanel(); ?></div>
-<?$APPLICATION->IncludeComponent(
-	"bitrix:eshop.banner",
-	"",
-	array()
-);?>
 <div class="bx-wrapper" id="bx_eshop_wrap">
 	<header class="bx-header">
 		<div class="bx-header-section container">
