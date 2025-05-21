@@ -15,3 +15,10 @@ $eventManager->addEventHandler('iblock', 'OnBeforeIBlockElementUpdate', [
     '\Local\TestModule\HelloManager',
     'onBeforeElementAddUpdate'
 ]);
+
+
+ $eventManager->addEventHandler('iblock', 'OnBeforeIBlockElementUpdate', [
+    '\Local\TestModule\HelloManager',
+    'onAfterElementUpdate'
+]);
+

@@ -27,4 +27,44 @@ class HelloManager
 
         return true;
     }
+
+
+    public static function onAfterElementUpdate(&$arFields)
+    {
+        if ($arFields['IBLOCK_ID'] != 4) {
+            return; 
+        }
+
+        $elementId = $arFields['ID'];
+        $authorPropId = 25; 
+
+        $propValues = $arFields['PROPERTY_VALUES'][$authorPropId] ?? [];
+        $newAuthorId = !empty($propValues) ? reset($propValues)['VALUE'] : null;
+
+        $dbRes = \CIBlockElement::GetProperty(
+            $arFields['IBLOCK_ID'],
+            $elementId,
+            [],
+            ['CODE' => 'AUTHOR']
+        );
+
+        if ($arProp = $dbRes->Fetch()) {
+            $oldAuthorId = $arProp['VALUE'];
+
+            if ($oldAuthorId != $newAuthorId) {
+                \CEventLog::Add([
+                    'SEVERITY' => 'INFO',
+                    'AUDIT_TYPE_ID' => 'ex2_590',
+                    'MODULE_ID' => 'iblock',
+                    'ITEM_ID' => $elementId,
+                    'DESCRIPTION' => sprintf(
+                        'В рецензии [%s] изменился автор с [%s] на [%s]',
+                        $elementId,
+                        $oldAuthorId,
+                        $newAuthorId
+                    ),
+                ]);
+            }
+        }
+    }
 }
