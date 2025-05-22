@@ -1,24 +1,28 @@
-<? if (!defined('B_PROLOG_INCLUDED') || B_PROLOG_INCLUDED !== true) die();
+<? if (!defined('B_PROLOG_INCLUDED') || B_PROLOG_INCLUDED !== true)
+    die();
 
 require_once __DIR__ . "/functions.php";
 require_once __DIR__ . "/constants.php";
+require_once __DIR__ . "/constants.php";
 require_once __DIR__ . "/lib/TestModule/HelloManager.php";
 
-$eventManager = \Bitrix\Main\EventManager::getInstance();
-
-$eventManager->addEventHandler('iblock', 'OnBeforeIBlockElementAdd', [
+//ex2-590
+AddEventHandler('iblock', 'OnBeforeIBlockElementAdd', [
     '\Local\TestModule\HelloManager',
-    'onBeforeElementAddUpdate'
+    'onBeforeElementAddUpdateHandler'
 ]);
 
-$eventManager->addEventHandler('iblock', 'OnBeforeIBlockElementUpdate', [
+AddEventHandler('iblock', 'OnBeforeIBlockElementUpdate', [
     '\Local\TestModule\HelloManager',
-    'onBeforeElementAddUpdate'
+    'onBeforeElementAddUpdateHandler'
 ]);
 
 
- $eventManager->addEventHandler('iblock', 'OnBeforeIBlockElementUpdate', [
+AddEventHandler('iblock', 'OnBeforeIBlockElementUpdate', [
     '\Local\TestModule\HelloManager',
-    'onAfterElementUpdate'
+    'OnBeforeIBlockElementHandler'
 ]);
-
+AddEventHandler('iblock', 'OnAfterIBlockElementUpdate', [
+    '\Local\TestModule\HelloManager',
+    'OnAfterIBlockElementHandler'
+]);

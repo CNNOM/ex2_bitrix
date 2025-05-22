@@ -1,69 +1,88 @@
 <?php
 
 namespace Local\TestModule;
+use Bitrix\Main\Localization\Loc;
+use CIBlockElement;
+use CEventLog;
+
+Loc::loadMessages(__FILE__);
 
 class HelloManager
 {
-    public static function onBeforeElementAddUpdate(&$arFields)
+    private static $data;
+    public static function onBeforeElementAddUpdateHandler(&$arFields)
     {
+        global $APPLICATION;
+        if ($arFields['IBLOCK_ID'] == ID_IBLOCK_REW) {
 
-        if ($arFields['IBLOCK_ID'] != 4) {
-            return true;
+            if (str_contains($arFields['PREVIEW_TEXT'], '#del#')) {
+                $arFields['PREVIEW_TEXT'] = str_replace('#del#', '', $arFields['PREVIEW_TEXT']);
+            }
+
+            if (mb_strlen($arFields['PREVIEW_TEXT']) < 5) {
+                $GLOBALS['APPLICATION']->ThrowException(
+                    Loc::getMessage('PREVIEW_TEXT')
+                );
+                return false;
+            }
         }
-
-        // Проверка длины анонса
-        $previewText = trim($arFields['PREVIEW_TEXT']);
-        if (mb_strlen($previewText, 'UTF-8') < 5) {
-            $GLOBALS['APPLICATION']->ThrowException(
-                'Текст анонса слишком короткий: ' . mb_strlen($previewText, 'UTF-8') . ', а должен быть не меньше 5'
-            );
-            return false;
-        }
-
-        // Удаление плейсхолдера #del#
-        if (strpos($previewText, '#del#') !== false) {
-            $arFields['PREVIEW_TEXT'] = str_replace('#del#', '', $previewText);
-        }
-
-        return true;
     }
 
-
-    public static function onAfterElementUpdate(&$arFields)
+    public static function OnBeforeIBlockElementHandler(&$arFields)
     {
-        if ($arFields['IBLOCK_ID'] != 4) {
-            return; 
+        global $APPLICATION;
+        if ($arFields['IBLOCK_ID'] == ID_IBLOCK_REW) {
+            $arProp = CIBlockElement::GetProperty(
+                ID_IBLOCK_REW,
+                $arFields['ID'],
+                [],
+                ['CODE' => 'AUTHOR']
+            );
+            while ($prop = $arProp->fetch()) {
+                $old_author = $prop['VALUE'];
+            }
+            if ($old_author) {
+                HelloManager::$data['old_author'][$arFields['ID']] = $old_author;
+            } else {
+                HelloManager::$data['old_author'][$arFields['ID']] = Loc::getMessage('NO_AUTHOR');
+            }
         }
+    }
 
-        $elementId = $arFields['ID'];
-        $authorPropId = 25; 
+    public static function OnAfterIBlockElementHandler(&$arFields)
+    {
+        global $APPLICATION;
+        if ($arFields['IBLOCK_ID'] == ID_IBLOCK_REW) {
+            $arProp = CIBlockElement::GetProperty(
+                ID_IBLOCK_REW,
+                $arFields['ID'],
+                [],
+                ['CODE' => 'AUTHOR']
+            );
+            while ($prop = $arProp->fetch()) {
+                $new_author = $prop['VALUE'];
+            }
+            if(!$new_author){
+                $new_author = Loc::getMessage('NO_AUTHOR');
+            }
+            $old_author = HelloManager::$data['old_author'][$arFields['ID']];
 
-        $propValues = $arFields['PROPERTY_VALUES'][$authorPropId] ?? [];
-        $newAuthorId = !empty($propValues) ? reset($propValues)['VALUE'] : null;
+            if ($new_author != $old_author) {
+                $mess = Loc::getMessage(
+                    'NEW_AUTHOR',
+                    [
+                        "#ID#" => $arFields['ID'],
+                        "#old#" => $old_author,
+                        "#new#" => $new_author,
+                    ]
+                );
 
-        $dbRes = \CIBlockElement::GetProperty(
-            $arFields['IBLOCK_ID'],
-            $elementId,
-            [],
-            ['CODE' => 'AUTHOR']
-        );
-
-        if ($arProp = $dbRes->Fetch()) {
-            $oldAuthorId = $arProp['VALUE'];
-
-            if ($oldAuthorId != $newAuthorId) {
-                \CEventLog::Add([
-                    'SEVERITY' => 'INFO',
-                    'AUDIT_TYPE_ID' => 'ex2_590',
-                    'MODULE_ID' => 'iblock',
-                    'ITEM_ID' => $elementId,
-                    'DESCRIPTION' => sprintf(
-                        'В рецензии [%s] изменился автор с [%s] на [%s]',
-                        $elementId,
-                        $oldAuthorId,
-                        $newAuthorId
-                    ),
-                ]);
+                CEventLog::Add(
+                    [
+                        'AUDIT_TYPE_ID' => 'ex2_590',
+                        'DESCRIPTION' => $mess,
+                    ]
+                );
             }
         }
     }
