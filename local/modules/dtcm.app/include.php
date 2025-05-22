@@ -47,3 +47,8 @@ AddEventHandler('main', 'OnBeforeEventSend', [
 ]);
 
 
+// [ex2-630]
+AddEventHandler('main', 'BeforeIndex', [
+    '\Local\TestModule\HelloManager',
+    'BeforeIndexHandler'
+]);

@@ -178,4 +178,35 @@ class HelloManager
             ]
         );
     }
+
+    // ex2-630
+    public static function BeforeIndexHandler(&$arFields)
+    {
+        if ($arFields["MODULE_ID"] == "iblock" && $arFields["PARAM2"] == ID_IBLOCK_REW) {
+            $property = CIBlockElement::GetProperty(
+                ID_IBLOCK_REW,
+                $arFields['ITEM_ID'],
+                [],
+                ['CODE' => 'AUTHOR']
+            )->Fetch();
+
+
+            if ($property && !empty($property['VALUE'])) {
+                // Получаем данные пользователя
+                $user = CUser::GetList(
+                    ($by = "id"),
+                    ($order = "desc"),
+                    ['ID' => $arFields['ID']],
+                    ['FIELDS' => ['LOGIN']]
+                )->fetch();
+
+                // Добавляем логин к заголовку, если пользователь существует
+                if ($user) {
+                    $arFields['TITLE'] .= ' ' . $user['LOGIN'];
+                }
+            }
+        }
+
+        return $arFields;
+    }
 }
