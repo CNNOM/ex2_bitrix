@@ -136,4 +136,46 @@ class HelloManager
             );
         }
     }
+
+
+    // [ex2-620] 
+    public static function OnBeforeEventSendHandler(&$arFields, &$arTemplate)
+    {
+        global $APPLICATION;
+        $arFilter = array(
+            "ACTIVE" => "Y",
+            "ID" => "usrid"
+        );
+        $rsUsers = CUser::GetList(
+            ($by = "personal_country"),
+            ($order = "desc"),
+            ['ID' => $arFields['USER_ID']],
+            ['FIELDS' => ['ID'], 'SELECT' => ['UF_USER_CLASS']]
+
+        )->fetch();
+
+        if ($rsUsers) {
+
+            $arTemplate["MESSAGE"] = str_replace('#CLASS#', $rsUsers['UF_USER_CLASS'], $arTemplate["MESSAGE"]);
+        } else {
+            $arTemplate["MESSAGE"] = str_replace('#CLASS#', Loc::getMessage('NO_CLASS'), $arTemplate["MESSAGE"]);
+        }
+        $APPLICATION->RestartBuffer();
+        echo '<pre>';
+        print_r($arTemplate);
+        echo '</pre>';
+        exit();
+        CEventLog::Add(
+            [
+                'AUDIT_TYPE_ID' => 'ex2_590',
+                'DESCRIPTION' => 'UF_USER_CLASS: ' . $rsUsers['UF_USER_CLASS'],
+            ]
+        );
+        CEventLog::Add(
+            [
+                'AUDIT_TYPE_ID' => 'ex2_590',
+                'DESCRIPTION' => 'UF_USER_CLASS: ' . $arTemplate["MESSAGE"],
+            ]
+        );
+    }
 }

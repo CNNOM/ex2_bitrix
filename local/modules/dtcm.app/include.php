@@ -4,6 +4,7 @@
 require_once __DIR__ . "/functions.php";
 require_once __DIR__ . "/constants.php";
 require_once __DIR__ . "/constants.php";
+require_once __DIR__ . "/agents.php";
 require_once __DIR__ . "/lib/TestModule/HelloManager.php";
 
 //ex2-590
@@ -40,4 +41,9 @@ AddEventHandler('main', 'OnAfterUserUpdate', [
 
 
 // [ex2-620]
+AddEventHandler('main', 'OnBeforeEventSend', [
+    '\Local\TestModule\HelloManager',
+    'OnBeforeEventSendHandler'
+]);
+
 
