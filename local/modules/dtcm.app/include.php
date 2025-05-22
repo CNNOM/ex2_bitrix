@@ -26,3 +26,14 @@ AddEventHandler('iblock', 'OnAfterIBlockElementUpdate', [
     '\Local\TestModule\HelloManager',
     'OnAfterIBlockElementHandler'
 ]);
+
+//[ex2-600]
+AddEventHandler('main', 'OnBeforeUserUpdate', [
+    '\Local\TestModule\HelloManager',
+    'OnBeforeUserUpdateHandler'
+]);
+AddEventHandler('main', 'OnAfterUserUpdate', [
+    '\Local\TestModule\HelloManager',
+    'OnAfterUserUpdateHandler'
+]);
+

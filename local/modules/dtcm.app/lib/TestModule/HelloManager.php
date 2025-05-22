@@ -4,12 +4,16 @@ namespace Local\TestModule;
 use Bitrix\Main\Localization\Loc;
 use CIBlockElement;
 use CEventLog;
+use CEvent;
+use CUser;
 
 Loc::loadMessages(__FILE__);
 
 class HelloManager
 {
     private static $data;
+
+    //ex2-590
     public static function onBeforeElementAddUpdateHandler(&$arFields)
     {
         global $APPLICATION;
@@ -62,7 +66,7 @@ class HelloManager
             while ($prop = $arProp->fetch()) {
                 $new_author = $prop['VALUE'];
             }
-            if(!$new_author){
+            if (!$new_author) {
                 $new_author = Loc::getMessage('NO_AUTHOR');
             }
             $old_author = HelloManager::$data['old_author'][$arFields['ID']];
@@ -84,6 +88,52 @@ class HelloManager
                     ]
                 );
             }
+        }
+    }
+
+    //[ex2-600]
+    public static function OnBeforeUserUpdateHandler(&$arFields)
+    {
+        global $APPLICATION;
+        $rsUsers = CUser::GetList(
+            ($by = "id"),
+            ($order = "desc"),
+            ['ID' => $arFields['ID']],
+            ['FIELDS' => ['ID'], 'SELECT' => ['UF_AUTHOR_STATUS']]
+
+        )->fetch();
+
+        HelloManager::$data['OLD_CLASS'][$arFields['ID']] = $rsUsers['UF_AUTHOR_STATUS'] ?? Loc::getMessage('NO_STATUS');
+    }
+
+    public static function OnAfterUserUpdateHandler(&$arFields)
+    {
+        global $APPLICATION;
+
+        $NEW_USER_CLASS = !empty($arFields['UF_AUTHOR_STATUS'])
+            ? $arFields['UF_AUTHOR_STATUS']
+            : Loc::getMessage('NO_STATUS');
+
+        $OLD_USER_CLASS = HelloManager::$data['OLD_CLASS'][$arFields['ID']];
+
+        if ($OLD_USER_CLASS != $NEW_USER_CLASS) {
+            $arEventFields = [
+                'OLD_USER_CLASS' => $OLD_USER_CLASS,
+                'NEW_USER_CLASS' => $NEW_USER_CLASS,
+            ];
+
+            CEventLog::Add(
+                [
+                    'AUDIT_TYPE_ID' => 'ex2_590',
+                    'DESCRIPTION' => 'OLD_USER_CLASS: ' . $OLD_USER_CLASS . ' NEW_USER_CLASS: ' . $NEW_USER_CLASS,
+                ]
+            );
+
+            CEvent::Send(
+                'EX2_AUTHOR_STATUS',
+                's1',
+                $arEventFields
+            );
         }
     }
 }

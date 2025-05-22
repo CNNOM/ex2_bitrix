@@ -6,6 +6,7 @@
         "tab.unfocusedActiveBorder": "#ff0000",
 
         "titleBar.activeBackground": "#5f2fc7c8",
+        "titleBar.inactiveBackground": "#5f2fc7c8",
         "titleBar.activeForeground": "#ffffff",
 
         "statusBar.background": "#5f2fc7c8",
