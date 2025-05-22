@@ -37,3 +37,7 @@ AddEventHandler('main', 'OnAfterUserUpdate', [
     'OnAfterUserUpdateHandler'
 ]);
 
+
+
+// [ex2-620]
+
