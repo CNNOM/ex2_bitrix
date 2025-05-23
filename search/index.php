@@ -8,12 +8,7 @@ $APPLICATION->SetTitle("Поиск");
 	"CHECK_DATES" => "N",
 	"USE_TITLE_RANK" => "N",
 	"DEFAULT_SORT" => "rank",
-	"arrFILTER" => array(
-		0 => "main",
-		1 => "iblock_services",
-		2 => "iblock_news",
-		3 => "iblock_catalog",
-	),
+	"arrFILTER" => [],
 	"arrFILTER_main" => array(
 	),
 	"arrFILTER_iblock_services" => array(

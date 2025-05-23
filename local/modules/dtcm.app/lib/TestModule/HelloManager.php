@@ -180,11 +180,6 @@ class HelloManager
 
             // $arTemplate["MESSAGE"] = str_replace('#CLASS#', Loc::getMessage('NO_CLASS'), $arTemplate["MESSAGE"]);
         }
-        // $APPLICATION->RestartBuffer();
-        // echo '<pre>';
-        // print_r($arTemplate);
-        // echo '</pre>';
-        // exit();
         CEventLog::Add(
             [
                 'AUDIT_TYPE_ID' => 'ex2_590',
@@ -202,6 +197,7 @@ class HelloManager
     // ex2-630
     public static function BeforeIndexHandler(&$arFields)
     {
+        global $APPLICATION;
         if ($arFields["MODULE_ID"] == "iblock" && $arFields["PARAM2"] == ID_IBLOCK_REW) {
             $property = CIBlockElement::GetProperty(
                 ID_IBLOCK_REW,
@@ -209,7 +205,6 @@ class HelloManager
                 [],
                 ['CODE' => 'AUTHOR']
             )->Fetch();
-
 
             if ($property && !empty($property['VALUE'])) {
                 // Получаем данные пользователя
@@ -222,7 +217,7 @@ class HelloManager
 
                 // Добавляем логин к заголовку, если пользователь существует
                 if ($user) {
-                    $arFields['TITLE'] .= ' ' . $user['LOGIN'];
+                    $arFields['TITLE'] .= ' ' . $user;
                 }
             }
         }
