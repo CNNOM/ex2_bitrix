@@ -1,11 +1,13 @@
 <?php
 
 namespace Local\TestModule;
+
 use Bitrix\Main\Localization\Loc;
 use CIBlockElement;
 use CEventLog;
 use CEvent;
 use CUser;
+use CUserFieldEnum;
 
 Loc::loadMessages(__FILE__);
 
@@ -99,22 +101,37 @@ class HelloManager
             ($by = "id"),
             ($order = "desc"),
             ['ID' => $arFields['ID']],
-            ['FIELDS' => ['ID'], 'SELECT' => ['UF_AUTHOR_STATUS']]
+            ['FIELDS' => ['ID'], 'SELECT' => ['UF_USER_CLASS']]
 
         )->fetch();
 
-        HelloManager::$data['OLD_CLASS'][$arFields['ID']] = $rsUsers['UF_AUTHOR_STATUS'] ?? Loc::getMessage('NO_STATUS');
+        HelloManager::$data['OLD_CLASS'][$arFields['ID']] = $rsUsers['UF_USER_CLASS'];
     }
 
     public static function OnAfterUserUpdateHandler(&$arFields)
     {
         global $APPLICATION;
-
-        $NEW_USER_CLASS = !empty($arFields['UF_AUTHOR_STATUS'])
-            ? $arFields['UF_AUTHOR_STATUS']
-            : Loc::getMessage('NO_STATUS');
-
         $OLD_USER_CLASS = HelloManager::$data['OLD_CLASS'][$arFields['ID']];
+
+        if ($OLD_USER_CLASS) {
+            $arElement = CUserFieldEnum::GetList(
+                [],
+                ['ID' => $OLD_USER_CLASS],
+            )->fetch();
+            $OLD_USER_CLASS = $arElement['VALUE'];
+        } else {
+            $OLD_USER_CLASS = Loc::getMessage('NO_CLASS');
+        }
+
+        if ($arFields['UF_USER_CLASS']) {
+            $arElement = CUserFieldEnum::GetList(
+                [],
+                ['ID' => $arFields['UF_USER_CLASS']]
+            )->fetch();
+            $NEW_USER_CLASS = $arElement['VALUE'];
+        } else {
+            $NEW_USER_CLASS = Loc::getMessage('NO_CLASS');
+        }
 
         if ($OLD_USER_CLASS != $NEW_USER_CLASS) {
             $arEventFields = [
@@ -155,16 +172,19 @@ class HelloManager
         )->fetch();
 
         if ($rsUsers) {
-
-            $arTemplate["MESSAGE"] = str_replace('#CLASS#', $rsUsers['UF_USER_CLASS'], $arTemplate["MESSAGE"]);
+            // $arFields['CLASS']
+            // $arTemplate["MESSAGE"] = str_replace('#CLASS#', $rsUsers['UF_USER_CLASS'], $arTemplate["MESSAGE"]);
+            $arFields['CLASS'] = $rsUsers['UF_USER_CLASS'];
         } else {
-            $arTemplate["MESSAGE"] = str_replace('#CLASS#', Loc::getMessage('NO_CLASS'), $arTemplate["MESSAGE"]);
+            $arFields['CLASS'] = Loc::getMessage('NO_CLASS');
+
+            // $arTemplate["MESSAGE"] = str_replace('#CLASS#', Loc::getMessage('NO_CLASS'), $arTemplate["MESSAGE"]);
         }
-        $APPLICATION->RestartBuffer();
-        echo '<pre>';
-        print_r($arTemplate);
-        echo '</pre>';
-        exit();
+        // $APPLICATION->RestartBuffer();
+        // echo '<pre>';
+        // print_r($arTemplate);
+        // echo '</pre>';
+        // exit();
         CEventLog::Add(
             [
                 'AUDIT_TYPE_ID' => 'ex2_590',
