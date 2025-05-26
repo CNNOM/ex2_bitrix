@@ -53,3 +53,11 @@ AddEventHandler('search', 'BeforeIndex', [
     '\Local\TestModule\HelloManager',
     'BeforeIndexHandler'
 ]);
+
+
+// ex2-190
+
+AddEventHandler('main', 'OnBuildGlobalMenu', [
+    '\Local\TestModule\HelloManager',
+    'OnBuildGlobalMenuHandler'
+]);
