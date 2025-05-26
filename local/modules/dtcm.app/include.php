@@ -48,7 +48,8 @@ AddEventHandler('main', 'OnBeforeEventSend', [
 
 
 // [ex2-630]
-AddEventHandler('main', 'BeforeIndex', [
+
+AddEventHandler('search', 'BeforeIndex', [
     '\Local\TestModule\HelloManager',
     'BeforeIndexHandler'
 ]);

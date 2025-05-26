@@ -195,7 +195,7 @@ class HelloManager
     }
 
     // ex2-630
-    public static function BeforeIndexHandler(&$arFields)
+    public static function BeforeIndexHandler($arFields)
     {
         global $APPLICATION;
         if ($arFields["MODULE_ID"] == "iblock" && $arFields["PARAM2"] == ID_IBLOCK_REW) {
@@ -207,7 +207,7 @@ class HelloManager
             )->Fetch();
 
             if ($property && !empty($property['VALUE'])) {
-                // Получаем данные пользователя
+
                 $user = CUser::GetList(
                     ($by = "id"),
                     ($order = "desc"),
@@ -215,9 +215,8 @@ class HelloManager
                     ['FIELDS' => ['LOGIN']]
                 )->fetch();
 
-                // Добавляем логин к заголовку, если пользователь существует
                 if ($user) {
-                    $arFields['TITLE'] .= ' ' . $user;
+                    $arFields['TITLE'] = $arFields['TITLE']  . ' - ' . $user['LOGIN'];
                 }
             }
         }
