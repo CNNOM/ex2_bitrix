@@ -211,12 +211,17 @@ class HelloManager
                 $user = CUser::GetList(
                     ($by = "id"),
                     ($order = "desc"),
-                    ['ID' => $arFields['ID']],
-                    ['FIELDS' => ['LOGIN']]
+                    ['ID' => $property['VALUE']],
+                    ['SELECT' => ['UF_USER_CLASS']]
+                )->fetch();
+
+                $arElement = CUserFieldEnum::GetList(
+                    [],
+                    ['ID' => $user['UF_USER_CLASS']]
                 )->fetch();
 
                 if ($user) {
-                    $arFields['TITLE'] = $arFields['TITLE']  . ' - ' . $user['LOGIN'];
+                    $arFields['TITLE'] = $arFields['TITLE']  . ' - ' . $arElement['VALUE'];
                 }
             }
         }
