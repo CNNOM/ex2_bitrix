@@ -14,6 +14,11 @@ AddEventHandler("main", "OnAfterUserUpdate", ["Event", "OnAfterUserUpdateHandler
 
 AddEventHandler("main", "OnBeforeEventSend", ["Event", "OnBeforeEventSendHandler"]);
 
+
+AddEventHandler("search", "BeforeIndex", ["Event", "BeforeIndexHandler"]);
+
+
+
 class Event
 {
     public static $data;
@@ -180,15 +185,52 @@ class Event
             ['SELECT' => ['UF_USER_CLASS_2']]
         )->fetch();
 
-        $arEnum = CUserFieldEnum::GetList(
-            [],
-            ['ID' => $arUser['UF_USER_CLASS_2']]
-        )->Fetch();
-
-        if ($arEnum) {
+        if ($arUser['UF_USER_CLASS_2']) {
+            $arEnum = CUserFieldEnum::GetList(
+                [],
+                ['ID' => $arUser['UF_USER_CLASS_2']]
+            )->Fetch();
             $arFields['CLASS'] = str_replace('#CLASS#', '', $arEnum['VALUE']);
         } else {
             $arFields['CLASS'] = str_replace('#CLASS#', '', Loc::getMessage('NO_CLASS'));
         }
+    }
+
+    public static function BeforeIndexHandler($arFields)
+    {
+        global $APPLICATION;
+        if ($arFields["MODULE_ID"] == "iblock" && $arFields["PARAM2"] == ID_IBLOCK_REVIEWS) {
+            $property = CIBlockElement::GetProperty(
+                ID_IBLOCK_REVIEWS,
+                $arFields['ITEM_ID'],
+                [],
+                ['CODE' => 'AUTHOR']
+            )->Fetch();
+
+            if ($property && !empty($property['VALUE'])) {
+
+                $user = CUser::GetList(
+                    ($by = "id"),
+                    ($order = "desc"),
+                    ['ID' => $property['VALUE']],
+                    ['SELECT' => ['UF_USER_CLASS_2']]
+                )->fetch();
+
+                if ($user['UF_USER_CLASS_2']) {
+                    $arElement = CUserFieldEnum::GetList(
+                        [],
+                        ['ID' => $user['UF_USER_CLASS_2']]
+                    )->fetch();
+
+                    if ($arElement['VALUE']) {
+                        $arFields['TITLE'] = $arFields['TITLE']  . ' - ' . $arElement['VALUE'];
+                    }
+                } else {
+                    $arFields['TITLE'] = $arFields['TITLE']  . ' - ' . Loc::getMessage('NO_CLASS');
+                }
+            }
+        }
+
+        return $arFields;
     }
 }
