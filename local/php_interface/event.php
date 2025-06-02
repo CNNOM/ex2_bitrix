@@ -12,6 +12,8 @@ AddEventHandler("main", "OnBeforeUserUpdate", ["Event", "OnBeforeUserUpdateHandl
 AddEventHandler("main", "OnAfterUserUpdate", ["Event", "OnAfterUserUpdateHandler"]);
 
 
+AddEventHandler("main", "OnBeforeEventSend", ["Event", "OnBeforeEventSendHandler"]);
+
 class Event
 {
     public static $data;
@@ -165,6 +167,28 @@ class Event
                 's1',
                 $data
             );
+        }
+    }
+
+    public static function OnBeforeEventSendHandler(&$arFields, &$arTemplate)
+    {
+        global $APPLICATION;
+        $arUser = CUser::GetList(
+            ($by = "id"),
+            ($order = "desc"),
+            ["ID" => $arFields['ID']],
+            ['SELECT' => ['UF_USER_CLASS_2']]
+        )->fetch();
+
+        $arEnum = CUserFieldEnum::GetList(
+            [],
+            ['ID' => $arUser['UF_USER_CLASS_2']]
+        )->Fetch();
+
+        if ($arEnum) {
+            $arFields['CLASS'] = str_replace('#CLASS#', '', $arEnum['VALUE']);
+        } else {
+            $arFields['CLASS'] = str_replace('#CLASS#', '', Loc::getMessage('NO_CLASS'));
         }
     }
 }
