@@ -15,7 +15,7 @@ if ($arResult['ITEMS']) {
 	$arIblockRev = CIBlockElement::GetList(
 		['SORT' => "ASC"],
 		[
-			'IBLOCK_ID' => ID_IBLOCK_REWIEWS,
+			'IBLOCK_ID' => ID_IBLOCK_REVIEWS,
 			'ACTIVE' => "Y",
 			'PROPERTY_PRODUCT' => $productId,
 		],
