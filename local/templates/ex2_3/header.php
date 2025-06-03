@@ -7,6 +7,7 @@ IncludeTemplateLangFile(__FILE__);
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru" lang="ru">
 
 <head>
+	<meta name="ex2_meta_3" content="<?= $APPLICATION->ShowProperty('ex2_meta_3') ?>">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 	<? $APPLICATION->ShowHead(); ?>
 	<link href="<?= SITE_TEMPLATE_PATH ?>/common.css" type="text/css" rel="stylesheet" />
@@ -14,8 +15,10 @@ IncludeTemplateLangFile(__FILE__);
 
 	<!-- ex2 -->
 	<?
+
 	use Bitrix\Main\Page\Asset;
-	Asset::getInstance()->addCss (SITE_TEMPLATE_PATH . "/ex2/style.css");
+
+	Asset::getInstance()->addCss(SITE_TEMPLATE_PATH . "/ex2/style.css");
 	?>
 	<!-- / -->
 
@@ -59,7 +62,10 @@ IncludeTemplateLangFile(__FILE__);
 
 			<div id="top-menu">
 				<div id="top-menu-inner">
-					<? $APPLICATION->IncludeComponent("bitrix:menu", "horizontal_multilevel", array(
+					<? $APPLICATION->IncludeComponent(
+						"bitrix:menu",
+						"horizontal_multilevel",
+						array(
 							"ROOT_MENU_TYPE" => "top",
 							"MAX_LEVEL" => "2",
 							"CHILD_MENU_TYPE" => "left",
@@ -108,18 +114,20 @@ IncludeTemplateLangFile(__FILE__);
 		<div id="content">
 
 			<div id="sidebar">
-				<? $APPLICATION->IncludeComponent("bitrix:menu", "left", array(
-					"ROOT_MENU_TYPE" => "left",
-					"MENU_CACHE_TYPE" => "A",
-					"MENU_CACHE_TIME" => "36000000",
-					"MENU_CACHE_USE_GROUPS" => "Y",
-					"MENU_CACHE_GET_VARS" => array(
+				<? $APPLICATION->IncludeComponent(
+					"bitrix:menu",
+					"left",
+					array(
+						"ROOT_MENU_TYPE" => "left",
+						"MENU_CACHE_TYPE" => "A",
+						"MENU_CACHE_TIME" => "36000000",
+						"MENU_CACHE_USE_GROUPS" => "Y",
+						"MENU_CACHE_GET_VARS" => array(),
+						"MAX_LEVEL" => "1",
+						"CHILD_MENU_TYPE" => "left",
+						"USE_EXT" => "Y",
+						"ALLOW_MULTI_SELECT" => "N"
 					),
-					"MAX_LEVEL" => "1",
-					"CHILD_MENU_TYPE" => "left",
-					"USE_EXT" => "Y",
-					"ALLOW_MULTI_SELECT" => "N"
-				),
 					false,
 					array(
 						"ACTIVE_COMPONENT" => "Y"
@@ -143,9 +151,12 @@ IncludeTemplateLangFile(__FILE__);
 					<div class="content-block-inner">
 
 						<?
-						$APPLICATION->IncludeComponent("bitrix:search.form", "flat", array(
-							"PAGE" => "#SITE_DIR#search/",
-						),
+						$APPLICATION->IncludeComponent(
+							"bitrix:search.form",
+							"flat",
+							array(
+								"PAGE" => "#SITE_DIR#search/",
+							),
 							false
 						);
 						?>
