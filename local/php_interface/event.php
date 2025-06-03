@@ -17,7 +17,7 @@ AddEventHandler("main", "OnBeforeEventSend", ["Event", "OnBeforeEventSendHandler
 
 AddEventHandler("search", "BeforeIndex", ["Event", "BeforeIndexHandler"]);
 
-
+AddEventHandler("main", 'OnBuildGlobalMenu', ['Event', 'OnBuildGlobalMenuHandler']);
 
 class Event
 {
@@ -117,7 +117,6 @@ class Event
             }
         }
     }
-
 
     public static function OnBeforeUserUpdateHandler(&$arFields)
     {
@@ -232,5 +231,42 @@ class Event
         }
 
         return $arFields;
+    }
+
+    public static function OnBuildGlobalMenuHandler(&$aGlobalMenu, &$aModuleMenu)
+    {
+        global $USER, $APPLICATION;
+        if (in_array(USER_GROUP_MAIL, $USER->GetUserGroupArray())) {
+            if (array_key_exists('global_menu_content', $aGlobalMenu)) {
+                $aGlobalMenuFilter['global_menu_content'] = $aGlobalMenu['global_menu_content'];
+            }
+
+            foreach ($aModuleMenu as $item) {
+                if ($item['parent_menu'] == 'global_menu_content') {
+                    $aModuleMenuFilter[] = $item;
+                }
+            }
+
+            $aGlobalMenuFilter['global_menu_quick'] = [
+                'menu_id' => 'quick_access',
+                'text' => 'Быстрый доступ',
+                'title' => 'Быстрый доступ',
+                'sort' => 100,
+                'items_id' => 'global_menu_quick',
+                'items' => [
+                    [
+                        'text' => 'Ссылка 1',
+                        'url' => 'https://test1/',
+                    ],
+                    [
+                        'text' => 'Ссылка 2',
+                        'url' => 'https://test2/',
+                    ],
+                ]
+            ];
+
+            $aGlobalMenu = $aGlobalMenuFilter;
+            $aModuleMenu = $aModuleMenuFilter;
+        }
     }
 }
