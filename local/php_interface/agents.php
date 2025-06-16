@@ -54,20 +54,6 @@ function Agents_test_3($old_timestamp = null)
 function Agent_good($old_timestamp = null)
 {
     if ($old_timestamp !== null) {
-        // Loader::includeModule("iblock");
-
-        // $arElement = CIBlockElement::GetList(
-        //     ['SORT' => 'ASC'],
-        //     [
-        //         'ACTIVE' => 'Y',
-        //         '>TIMESTAMP_X' => ConvertTimeStamp($old_timestamp, 'FULL'),
-        //         'IBLOCK_ID' => ID_IBLOCK_REVIEWS,
-        //     ],
-        //     false,
-        //     false,
-        //     ["ID", "IBLOCK_ID"]
-        // );
-
         $arFilter = [
             "ACTIVE"        => "Y",
             ">TIMESTAMP_X"  => ConvertTimeStamp($old_timestamp, 'FULL'),
