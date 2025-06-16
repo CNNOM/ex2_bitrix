@@ -2,6 +2,7 @@
 
 use Bitrix\Main\Localization\Loc;
 
+//-----
 
 AddEventHandler(
     "iblock",
@@ -19,6 +20,7 @@ AddEventHandler(
     "OnAfterIBlockElementUpdate",
     ["Event", "OnAfterIBlockElementUpdateHandler"]
 );
+//-----
 
 
 AddEventHandler(
@@ -31,6 +33,9 @@ AddEventHandler(
     "OnAfterUserUpdate",
     ["Event", "OnAfterUserUpdateHandler"]
 );
+//-----
+
+
 
 Loc::loadMessages(__FILE__);
 
@@ -125,8 +130,6 @@ class Event
         }
     }
 
-
-
     //-----
 
     public static function OnBeforeUserUpdateHandler(&$arFields)
@@ -185,4 +188,7 @@ class Event
             CEvent::Send('EX2_AUTHOR_INFO', SITE_ID, $mess);
         }
     }
+
+    //-----
+
 }
