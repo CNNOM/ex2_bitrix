@@ -46,6 +46,15 @@ AddEventHandler(
     ["Event", "BeforeIndexHandler"]
 );
 
+//-----
+
+AddEventHandler(
+    "main",
+    "OnBuildGlobalMenu",
+    ["Event", "OnBuildGlobalMenu"]
+);
+
+
 Loc::loadMessages(__FILE__);
 
 class Event
@@ -267,6 +276,43 @@ class Event
             }
 
             return $arFields;
+        }
+    }
+
+    public static function OnBuildGlobalMenu(&$aGlobalMenu, &$aModuleMenu)
+    {
+        global $APPLICATION;
+        global $USER;
+
+        if (in_array(USER_GROUP_5, $USER->GetUserGroupArray())) {
+            $myGlobalMenu['global_menu_content'] = $aGlobalMenu['global_menu_content'];
+
+
+            foreach ($aModuleMenu as $key => $value) {
+                if ($value['parent_menu'] == 'global_menu_content') {
+                    $myaModuleMenu[] = $value;
+                }
+            }
+            $myGlobalMenu['global_menu_quick'] = [
+                'menu_id' => 'quick_access',
+                'text' => 'Быстрый доступ',
+                'title' => 'Быстрый доступ',
+                'sort' => 100,
+                'items_id' => 'global_menu_quick',
+                'items' => [
+                    [
+                        'text' => 'Ссылка 1',
+                        'url' => 'https://test1/'
+                    ],
+                    [
+                        'text' => 'Ссылка 2',
+                        'url' => 'https://test2/'
+                    ]
+                ]
+            ];
+
+            $aGlobalMenu = $myGlobalMenu;
+            $aModuleMenu = $myaModuleMenu;
         }
     }
 }
