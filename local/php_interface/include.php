@@ -39,7 +39,12 @@ AddEventHandler(
     'OnBeforeEventSend',
     ["Event", "OnBeforeEventSendHandler"]
 );
-
+//-----
+AddEventHandler(
+    "search",
+    "BeforeIndex",
+    ["Event", "BeforeIndexHandler"]
+);
 
 Loc::loadMessages(__FILE__);
 
@@ -223,6 +228,45 @@ class Event
                     'DESCRIPTION'   => $arFields['CLASS']
                 ]
             );
+        }
+    }
+    //-----
+
+    public static function BeforeIndexHandler($arFields)
+    {
+        global $APPLICATION;
+        if ($arFields['MODULE_ID'] == 'iblock' && $arFields['PARAM2'] == ID_IBLOCK_REVIEWS) {
+
+            $arProp = CIBlockElement::GetProperty(
+                ID_IBLOCK_REVIEWS,
+                $arFields['ITEM_ID'],
+                [],
+                ['CODE' => 'AUTHOR']
+            )->fetch();
+
+            if ($arProp['VALUE']) {
+                $arUser = CUser::GetList(
+                    ($by = "id"),
+                    ($order = "desc"),
+                    ['ID' => $arProp['VALUE']],
+                    ['FIELD' => ['ID'], 'SELECT' => ['UF_USER_CLASS_3']]
+                )->fetch();
+
+                if ($arUser['UF_USER_CLASS_3']) {
+                    $arClass = CUserFieldEnum::GetList(
+                        [],
+                        ['ID' => $arUser['UF_USER_CLASS_3']]
+                    )->fetch();
+
+                    if ($arClass['VALUE']) {
+                        $arFields['TITLE'] = $arFields['TITLE'] . ' - ' . $arClass['VALUE'];
+                    }
+                } else {
+                    $arFields['TITLE'] = $arFields['TITLE'] . ' - ' . Loc::getMessage('NOT_CLASS');
+                }
+            }
+
+            return $arFields;
         }
     }
 }
