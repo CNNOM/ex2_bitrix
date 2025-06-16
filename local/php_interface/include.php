@@ -20,6 +20,18 @@ AddEventHandler(
     ["Event", "OnAfterIBlockElementUpdateHandler"]
 );
 
+
+AddEventHandler(
+    "main",
+    "OnBeforeUserUpdate",
+    ["Event", "OnBeforeUserUpdateHandler"]
+);
+AddEventHandler(
+    "main",
+    "OnAfterUserUpdate",
+    ["Event", "OnAfterUserUpdateHandler"]
+);
+
 Loc::loadMessages(__FILE__);
 
 class Event
@@ -95,14 +107,6 @@ class Event
 
             $old_author = Event::$data['OLD_AUTHOR'][$arFields['ID']];
 
-            // $APPLICATION->RestartBuffer();
-            // echo '<pre>';
-            // print_r($new_author);
-            // echo '</pre>';
-            // echo '<pre>';
-            // print_r($old_author);
-            // echo '</pre>';
-            // exit();
             $mess = Loc::getMessage(
                 'NEW_AUTHOR',
                 [
@@ -118,6 +122,67 @@ class Event
                     "DESCRIPTION" => $mess,
                 ));
             }
+        }
+    }
+
+
+
+    //-----
+
+    public static function OnBeforeUserUpdateHandler(&$arFields)
+    {
+        global $APPLICATION;
+        $arUser = CUser::GetList(
+            ($by = "id"),
+            ($order = "desc"),
+            ['ID' => $arFields['ID']],
+            ['FIELD' => ['ID'], 'SELECT' => ['UF_USER_CLASS_3']]
+        )->fetch();
+
+        $old_class = $arUser['UF_USER_CLASS_3'];
+        // if (!$old_class) {
+        //     $old_class = Loc::getMessage('NOT_CLASSs');
+        // }
+
+        Event::$data['OLD_CLASS'][$arFields['ID']] = $old_class;
+    }
+
+    public static function OnAfterUserUpdateHandler(&$arFields)
+    {
+        global $APPLICATION;
+
+        $old_class = Event::$data['OLD_CLASS'][$arFields['ID']];
+        $new_class = $arFields['UF_USER_CLASS_3'];
+
+        if ($old_class) {
+            $arClass = CUserFieldEnum::GetList(
+                [],
+                ['ID' => $old_class]
+            )->fetch();
+            $old_class = $arClass['VALUE'];
+        } else {
+            $old_class = Loc::getMessage('NOT_CLASS');
+        }
+
+
+        if ($new_class) {
+            $arClass = CUserFieldEnum::GetList(
+                [],
+                ['ID' => $new_class]
+            )->fetch();
+            $new_class = $arClass['VALUE'];
+        } else {
+            $new_class = Loc::getMessage('NOT_CLASS');
+        }
+
+        if ($old_class != $new_class) {
+
+            $mess = [
+                'OLD_USER_CLASS' => $old_class,
+                'NEW_USER_CLASS' => $new_class,
+            ];
+
+            CEvent::Send('EX2_AUTHOR_INFO', SITE_ID, $mess);
         }
     }
 }
