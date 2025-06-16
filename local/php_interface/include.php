@@ -34,7 +34,11 @@ AddEventHandler(
     ["Event", "OnAfterUserUpdateHandler"]
 );
 //-----
-
+AddEventHandler(
+    'main',
+    'OnBeforeEventSend',
+    ["Event", "OnBeforeEventSendHandler"]
+);
 
 
 Loc::loadMessages(__FILE__);
@@ -191,4 +195,34 @@ class Event
 
     //-----
 
+    public static function OnBeforeEventSendHandler(&$arFields, &$arTemplate)
+    {
+        global $APPLICATION;
+        if ($arTemplate['EVENT_NAME'] === 'USER_INFO') {
+
+            $arUser = CUser::GetList(
+                ($by = "id"),
+                ($order = "desc"),
+                ['ID' => $arFields['USER_ID']],
+                ['FIELD' => ['ID'], 'SELECT' => ['UF_USER_CLASS_3']]
+            )->fetch();
+
+            if ($arUser['UF_USER_CLASS_3']) {
+                $arElement = CUserFieldEnum::GetList(
+                    [],
+                    ['ID' => $arUser['UF_USER_CLASS_3'], 'USER_FIELD_ID' => UF_USER_CLASS_3]
+                )->fetch();
+
+                $arFields['CLASS'] = $arElement['VALUE'];
+            } else {
+                $arFields['CLASS'] = Loc::getMessage('NO_CLASS');
+            }
+            CEventLog::Add(
+                [
+                    'AUDIT_TYPE_ID' => 'OnBeforeEventSendHandlers',
+                    'DESCRIPTION'   => $arFields['CLASS']
+                ]
+            );
+        }
+    }
 }
