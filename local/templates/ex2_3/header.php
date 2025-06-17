@@ -170,6 +170,8 @@ IncludeTemplateLangFile(__FILE__);
 						<div class="special-product">
 							<div class="special-product-title">
 								Строка
+								<?php $APPLICATION->ShowViewContent('sidebar') ?>
+
 							</div>
 						</div>
 					</div>

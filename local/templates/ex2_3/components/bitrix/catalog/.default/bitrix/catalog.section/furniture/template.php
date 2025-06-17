@@ -35,10 +35,10 @@
 				if ($pid != 'PRICECURRENCY'):
 			?>
 					<?= $arProperty["NAME"] ?>:&nbsp;<?
-													if (is_array($arProperty["DISPLAY_VALUE"]))
-														echo implode("&nbsp;/&nbsp;", $arProperty["DISPLAY_VALUE"]);
-													else
-														echo $arProperty["DISPLAY_VALUE"]; ?><br />
+														if (is_array($arProperty["DISPLAY_VALUE"]))
+															echo implode("&nbsp;/&nbsp;", $arProperty["DISPLAY_VALUE"]);
+														else
+															echo $arProperty["DISPLAY_VALUE"]; ?><br />
 			<?
 				endif;
 			endforeach;
@@ -48,10 +48,12 @@
 			</div>
 			<?php if ($arResult['reviews']): ?>
 				<h1>Рецензии:</h1>
-				<?php foreach($arResult['reviews'] as $key => $value):?>
-					<p><?=  $value ?></p>
-					<?php endforeach;?>
+				<?php foreach ($arResult['reviews'] as $key => $value): ?>
+
+					<p><?= $value ?></p>
+				<?php endforeach; ?>
 			<?php endif; ?>
+
 
 			<?
 			foreach ($arElement["PRICES"] as $code => $arPrice):
@@ -71,3 +73,12 @@
 		<br /><?= $arResult["NAV_STRING"] ?>
 	<? endif; ?>
 </div>
+
+
+<? $this->SetViewTarget("sidebar"); ?>
+sdsd
+
+<? echo '<pre>';
+print_r($arResult['reviews']);
+echo '</pre>'; ?>
+<? $this->EndViewTarget(); ?>
