@@ -8,10 +8,14 @@ IncludeTemplateLangFile(__FILE__);
 
 <head>
 	<? $prop = "ex2_meta"; ?>
+	
 	<meta
 		name="<?= $prop ?>"
 		content="<?= $APPLICATION->ShowProperty($prop) ?>">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+	<?$prop = 'ex2_meta'?>
+	<meta name="<?= $prop?>" content="<?$APPLICATION->ShowProperty($prop)?>">
 	<? $APPLICATION->ShowHead(); ?>
 	<link href="<?= SITE_TEMPLATE_PATH ?>/common.css" type="text/css" rel="stylesheet" />
 	<link href="<?= SITE_TEMPLATE_PATH ?>/colors.css" type="text/css" rel="stylesheet" />
@@ -149,6 +153,7 @@ IncludeTemplateLangFile(__FILE__);
 					</div>
 				</div>
 				<? $APPLICATION->ShowViewContent('ex_test'); ?>
+				<?$APPLICATION->ShowViewContent('news_detail');?>
 
 				<div class="content-block">
 					<div class="content-block-inner">

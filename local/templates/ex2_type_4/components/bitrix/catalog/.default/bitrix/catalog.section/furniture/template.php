@@ -1,4 +1,5 @@
-<? if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) die(); ?>
+<? if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true)
+	die(); ?>
 <div class="catalog-list">
 	<? if ($arParams["DISPLAY_TOP_PAGER"]): ?>
 		<?= $arResult["NAV_STRING"] ?><br />
@@ -10,55 +11,65 @@
 		$width = 0;
 		$this->AddEditAction($arElement['ID'], $arElement['EDIT_LINK'], CIBlock::GetArrayByID($arParams["IBLOCK_ID"], "ELEMENT_EDIT"));
 		$this->AddDeleteAction($arElement['ID'], $arElement['DELETE_LINK'], CIBlock::GetArrayByID($arParams["IBLOCK_ID"], "ELEMENT_DELETE"), array("CONFIRM" => GetMessage('CATALOG_ELEMENT_DELETE_CONFIRM')));
-	?>
+		?>
 		<div class="catalog-item" id="<?= $this->GetEditAreaId($arElement['ID']); ?>">
 			<?
 			if (is_array($arElement["PREVIEW_PICTURE"])):
 				$width = $arElement["PREVIEW_PICTURE"]["WIDTH"];
-			?>
+				?>
 				<div class="catalog-item-image">
-					<a href="<?= $arElement["DETAIL_PAGE_URL"] ?>"><img src="<?= $arElement["PREVIEW_PICTURE"]["SRC"] ?>" width="<?= $arElement["PREVIEW_PICTURE"]["WIDTH"] ?>" height="<?= $arElement["PREVIEW_PICTURE"]["HEIGHT"] ?>" alt="<?= $arElement["NAME"] ?>" title="<?= $arElement["NAME"] ?>" /></a>
+					<a href="<?= $arElement["DETAIL_PAGE_URL"] ?>"><img src="<?= $arElement["PREVIEW_PICTURE"]["SRC"] ?>"
+							width="<?= $arElement["PREVIEW_PICTURE"]["WIDTH"] ?>"
+							height="<?= $arElement["PREVIEW_PICTURE"]["HEIGHT"] ?>" alt="<?= $arElement["NAME"] ?>"
+							title="<?= $arElement["NAME"] ?>" /></a>
 				</div>
 			<?
 			elseif (is_array($arElement["DETAIL_PICTURE"])):
 				$width = $arElement["DETAIL_PICTURE"]["WIDTH"];
-			?>
+				?>
 				<div class="catalog-item-image">
-					<a href="<?= $arElement["DETAIL_PAGE_URL"] ?>"><img src="<?= $arElement["DETAIL_PICTURE"]["SRC"] ?>" width="<?= $arElement["DETAIL_PICTURE"]["WIDTH"] ?>" height="<?= $arElement["DETAIL_PICTURE"]["HEIGHT"] ?>" alt="<?= $arElement["NAME"] ?>" title="<?= $arElement["NAME"] ?>" /></a>
+					<a href="<?= $arElement["DETAIL_PAGE_URL"] ?>"><img src="<?= $arElement["DETAIL_PICTURE"]["SRC"] ?>"
+							width="<?= $arElement["DETAIL_PICTURE"]["WIDTH"] ?>"
+							height="<?= $arElement["DETAIL_PICTURE"]["HEIGHT"] ?>" alt="<?= $arElement["NAME"] ?>"
+							title="<?= $arElement["NAME"] ?>" /></a>
 				</div>
 			<?
 			endif;
 			?>
-			<div class="catalog-item-title"><a href="<?= $arElement["DETAIL_PAGE_URL"] ?>"><?= $arElement["NAME"] ?></a></div>
+			<div class="catalog-item-title"><a href="<?= $arElement["DETAIL_PAGE_URL"] ?>"><?= $arElement["NAME"] ?></a>
+			</div>
 			<?
 			foreach ($arElement["DISPLAY_PROPERTIES"] as $pid => $arProperty):
 				if ($pid != 'PRICECURRENCY'):
-			?>
-					<?= $arProperty["NAME"] ?>:&nbsp;<?
-														if (is_array($arProperty["DISPLAY_VALUE"]))
-															echo implode("&nbsp;/&nbsp;", $arProperty["DISPLAY_VALUE"]);
-														else
-															echo $arProperty["DISPLAY_VALUE"]; ?><br />
-			<?
+					?>
+					<?= $arProperty["NAME"] ?>:&nbsp;
+					<?
+					if (is_array($arProperty["DISPLAY_VALUE"]))
+						echo implode("&nbsp;/&nbsp;", $arProperty["DISPLAY_VALUE"]);
+					else
+						echo $arProperty["DISPLAY_VALUE"]; ?><br />
+				<?
 				endif;
 			endforeach;
 			?>
 			<div class="catalog-item-desc<?= $width < 300 ? '-float' : '' ?>">
 				<?= $arElement["PREVIEW_TEXT"] ?>
 			</div>
-			<?php if ($arResult['rev'][$arElement['ID']]): ?>
-				//////-----------
-				Рецензии:
-				<?php foreach ($arResult['rev'][$arElement['ID']] as $key => $value): ?>
+
+			<?php if ($arResult['REV']): ?>
+				<h3>РецензииЖ</h3>
+
+				<?php foreach ($arResult['REV'][$arElement['ID']] as $key => $value): ?>
 					<p><?= $value ?></p>
 				<?php endforeach; ?>
 			<?php endif; ?>
 			<?
 			foreach ($arElement["PRICES"] as $code => $arPrice):
 				if ($arPrice["CAN_ACCESS"]):
-			?>
-					<div class="catalog-item-price"><span><?= $arResult["PRICES"][$code]["TITLE"]; ?>:</span> <?= $arPrice["PRINT_VALUE"] ?></div>
-			<?
+					?>
+					<div class="catalog-item-price"><span><?= $arResult["PRICES"][$code]["TITLE"]; ?>:</span>
+						<?= $arPrice["PRINT_VALUE"] ?></div>
+				<?
 				endif;
 			endforeach;
 			?>
@@ -72,20 +83,8 @@
 	<? endif; ?>
 </div>
 
-
-<? if ($arResult['rev']): ?>
-	<? $this->SetViewTarget('ex_test'); ?>
-	<div id="filial-special" class="information-block">
-		<div class="top"></div>
-		<div class="information-block-inner">
-			<h3>Заголовок</h3>
-			<div class="special-product">
-				<div class="special-product-title">
-					<?= $arResult['firstEl'] ?>
-				</div>
-			</div>
-		</div>
-		<div class="bottom"></div>
-	</div>
+<? if ($arResult['FIRST_REV']): ?>
+	<? $this->SetViewTarget('news_detail'); ?>
+	<?= $arResult['FIRST_REV'] ?>
 	<? $this->EndViewTarget(); ?>
-<?php endif; ?>
+<? endif; ?>

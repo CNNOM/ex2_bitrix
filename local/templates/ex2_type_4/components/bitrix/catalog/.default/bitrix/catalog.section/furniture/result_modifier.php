@@ -1,60 +1,67 @@
 <?php
-if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) die();
+if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true)
+	die();
 
 foreach ($arResult['ITEMS'] as $key => $arItem) {
-	$arItem['PRICES']['PRICE']['PRINT_VALUE'] = number_format((float)$arItem['PRICES']['PRICE']['PRINT_VALUE'], 0, '.', ' ');
+	$arItem['PRICES']['PRICE']['PRINT_VALUE'] = number_format((float) $arItem['PRICES']['PRICE']['PRINT_VALUE'], 0, '.', ' ');
 	$arItem['PRICES']['PRICE']['PRINT_VALUE'] .= ' ' . $arItem['PROPERTIES']['PRICECURRENCY']['VALUE_ENUM'];
 
 	$arResult['ITEMS'][$key] = $arItem;
 }
 
-$arRev = CIBlockElement::GetList(
-	["SORT" => "ASC"],
+
+$arRevIblock = CIBlockElement::GetList(
+	['SORT' => 'ASC'],
 	[
 		'IBLOCK_ID' => REVIEWS_IBLOCK_ID,
-		"ACTIVE" => "Y",
+		'ACTIVE' => 'Y'
 	],
 	false,
 	false,
-	['*', 'PROPERTY_PRODUCT', 'PROPERTY_AUTHOR']
+	['*', 'PROPERTY_AUTHOR', 'PROPERTY_PRODUCT']
 );
 
-while ($rev = $arRev->fetch()) {
-	$arRevEl[] = $rev;
+while ($element = $arRevIblock->fetch()) {
+	$arRev[] = $element;
 }
 
-$arAuthor = array_unique(array_column($arRevEl, 'PROPERTY_AUTHOR_VALUE'));
+$arAuthorId = array_unique(array_column($arRev, 'PROPERTY_AUTHOR_VALUE'));
+
 $arUser = CUser::GetList(
 	($by = 'id'),
 	($order = 'asc'),
 	[
-		'ID' => implode('|', $arAuthor),
-		'UF_AUTHOR_STATUS_3' => 	REW_STATUS
+		'ID' => implode('|', $arAuthorId),
+		'UF_AUTHOR_STATUS_3' => AUTHOR_STATUS,
 	],
-	['*', 'SELECT' => ['UF_USER_CLASS_3', 'UF_AUTHOR_STATUS_3']]
+	['SELECT' => ['UF_USER_CLASS_3', 'UF_AUTHOR_STATUS_3']]
 );
-while ($user = $arUser->fetch()) {
-	$arUsers[] = $user['ID'];
+
+while ($element = $arUser->fetch()) {
+	$arUsers[] = $element['ID'];
 }
 
-if (is_array($arAuthor)) {
-	foreach ($arRevEl as $key => $value) {
+if ($arUsers) {
+	foreach ($arRev as $key => $value) {
 		if (in_array($value['PROPERTY_AUTHOR_VALUE'], $arUsers)) {
-			$arResult['rev'][$value['PROPERTY_PRODUCT_VALUE']][] =  $value['NAME'];
+			$arResult['REV'][$value['PROPERTY_PRODUCT_VALUE']][] = $value['NAME'];
 		}
 	}
 }
 
 
-$firstKey = array_key_first($arResult['rev']);
-
-$arResult['firstEl'] = $arResult['rev'][$firstKey][0];
-
-
 $meta = $APPLICATION->GetProperty('ex2_meta');
-$count = count($arRevEl);
-
-if (str_contains($meta, '#count#')) {
+$count = count($arRev);
+if(str_contains($meta, '#count#')){
 	$meta = str_replace('#count#', $count, $meta);
-	$APPLICATION->SetPageProperty('ex2_meta', $meta);
 }
+$APPLICATION->SetPageProperty('ex2_meta', $meta);
+
+
+$arResult['FIRST_REV'] = $arRev[0]['NAME'];
+
+// $APPLICATION->RestartBuffer();
+// echo '<pre>';
+// print_r($arResult['FIRST_REV']);
+// echo '</pre>';
+// exit();
