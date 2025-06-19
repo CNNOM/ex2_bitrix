@@ -9,59 +9,55 @@ foreach ($arResult['ITEMS'] as $key => $arItem) {
 	$arResult['ITEMS'][$key] = $arItem;
 }
 
+$arItem = array_column($arResult['ITEMS'], 'ID');
 
-$arRevIblock = CIBlockElement::GetList(
-	['SORT' => 'ASC'],
+$arRevItem = CIBlockElement::GetList(
+	['PROPERTY_AUTHOR' => 'DESC'],
 	[
-		'IBLOCK_ID' => REVIEWS_IBLOCK_ID,
-		'ACTIVE' => 'Y'
+		'IBLOCK__ID' => 9,
+		'ACTIVE' => 'Y',
+		'PROPERTY_PRODUCT' => $arItem,
 	],
 	false,
 	false,
-	['*', 'PROPERTY_AUTHOR', 'PROPERTY_PRODUCT']
+	['ID', 'NAME', 'PROPERTY_AUTHOR', 'PROPERTY_PRODUCT'],
 );
 
-while ($element = $arRevIblock->fetch()) {
-	$arRev[] = $element;
+while ($el = $arRevItem->fetch()) {
+	$arRev[] = $el;
 }
 
-$arAuthorId = array_unique(array_column($arRev, 'PROPERTY_AUTHOR_VALUE'));
+$arUserId = array_unique(array_column($arRev, 'PROPERTY_AUTHOR_VALUE'));
 
-$arUser = CUser::GetList(
-	($by = 'id'),
-	($order = 'asc'),
+$arUsers = CUser::GetList(
+	($by = "ID"),
+	($order = "desc"),
 	[
-		'ID' => implode('|', $arAuthorId),
-		'UF_AUTHOR_STATUS_3' => AUTHOR_STATUS,
+		'ID' => implode('|', $arUserId),
+		'UF_AUTHOR_STATUS_3' => 342,
 	],
-	['SELECT' => ['UF_USER_CLASS_3', 'UF_AUTHOR_STATUS_3']]
+	['ID', 'SELECT' => ['UF_AUTHOR_STATUS_3']]
 );
-
-while ($element = $arUser->fetch()) {
-	$arUsers[] = $element['ID'];
+while ($el = $arUsers->fetch()) {
+	$users[] = $el['ID'];
 }
 
-if ($arUsers) {
+if (is_array($users)) {
 	foreach ($arRev as $key => $value) {
-		if (in_array($value['PROPERTY_AUTHOR_VALUE'], $arUsers)) {
+		if (in_array($value['PROPERTY_AUTHOR_VALUE'], $users)) {
 			$arResult['REV'][$value['PROPERTY_PRODUCT_VALUE']][] = $value['NAME'];
 		}
 	}
 }
 
-
 $meta = $APPLICATION->GetProperty('ex2_meta');
-$count = count($arRev);
-if(str_contains($meta, '#count#')){
-	$meta = str_replace('#count#', $count, $meta);
+$len = count($arRev);
+if (str_contains($meta, '#count#')) {
+	$meta = str_replace('#count#', $len, $meta);
 }
 $APPLICATION->SetPageProperty('ex2_meta', $meta);
 
+if ($arRev) {
+	$arResult['FirestRev'] = $arRev[0]['NAME'];
+}
 
-$arResult['FIRST_REV'] = $arRev[0]['NAME'];
-
-// $APPLICATION->RestartBuffer();
-// echo '<pre>';
-// print_r($arResult['FIRST_REV']);
-// echo '</pre>';
-// exit();

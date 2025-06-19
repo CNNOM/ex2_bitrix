@@ -11,12 +11,12 @@
 		$width = 0;
 		$this->AddEditAction($arElement['ID'], $arElement['EDIT_LINK'], CIBlock::GetArrayByID($arParams["IBLOCK_ID"], "ELEMENT_EDIT"));
 		$this->AddDeleteAction($arElement['ID'], $arElement['DELETE_LINK'], CIBlock::GetArrayByID($arParams["IBLOCK_ID"], "ELEMENT_DELETE"), array("CONFIRM" => GetMessage('CATALOG_ELEMENT_DELETE_CONFIRM')));
-		?>
+	?>
 		<div class="catalog-item" id="<?= $this->GetEditAreaId($arElement['ID']); ?>">
 			<?
 			if (is_array($arElement["PREVIEW_PICTURE"])):
 				$width = $arElement["PREVIEW_PICTURE"]["WIDTH"];
-				?>
+			?>
 				<div class="catalog-item-image">
 					<a href="<?= $arElement["DETAIL_PAGE_URL"] ?>"><img src="<?= $arElement["PREVIEW_PICTURE"]["SRC"] ?>"
 							width="<?= $arElement["PREVIEW_PICTURE"]["WIDTH"] ?>"
@@ -26,7 +26,7 @@
 			<?
 			elseif (is_array($arElement["DETAIL_PICTURE"])):
 				$width = $arElement["DETAIL_PICTURE"]["WIDTH"];
-				?>
+			?>
 				<div class="catalog-item-image">
 					<a href="<?= $arElement["DETAIL_PAGE_URL"] ?>"><img src="<?= $arElement["DETAIL_PICTURE"]["SRC"] ?>"
 							width="<?= $arElement["DETAIL_PICTURE"]["WIDTH"] ?>"
@@ -41,14 +41,14 @@
 			<?
 			foreach ($arElement["DISPLAY_PROPERTIES"] as $pid => $arProperty):
 				if ($pid != 'PRICECURRENCY'):
-					?>
+			?>
 					<?= $arProperty["NAME"] ?>:&nbsp;
 					<?
 					if (is_array($arProperty["DISPLAY_VALUE"]))
 						echo implode("&nbsp;/&nbsp;", $arProperty["DISPLAY_VALUE"]);
 					else
 						echo $arProperty["DISPLAY_VALUE"]; ?><br />
-				<?
+			<?
 				endif;
 			endforeach;
 			?>
@@ -56,20 +56,19 @@
 				<?= $arElement["PREVIEW_TEXT"] ?>
 			</div>
 
-			<?php if ($arResult['REV']): ?>
-				<h3>РецензииЖ</h3>
-
+			<?php if ($arResult['REV'][$arElement['ID']]): ?>
+				<h3>Руц</h3>
 				<?php foreach ($arResult['REV'][$arElement['ID']] as $key => $value): ?>
-					<p><?= $value ?></p>
+					<?= $value ?>
 				<?php endforeach; ?>
 			<?php endif; ?>
 			<?
 			foreach ($arElement["PRICES"] as $code => $arPrice):
 				if ($arPrice["CAN_ACCESS"]):
-					?>
+			?>
 					<div class="catalog-item-price"><span><?= $arResult["PRICES"][$code]["TITLE"]; ?>:</span>
 						<?= $arPrice["PRINT_VALUE"] ?></div>
-				<?
+			<?
 				endif;
 			endforeach;
 			?>
@@ -83,8 +82,9 @@
 	<? endif; ?>
 </div>
 
-<? if ($arResult['FIRST_REV']): ?>
+
+<? if ($arResult['FirestRev']): ?>
 	<? $this->SetViewTarget('news_detail'); ?>
-	<?= $arResult['FIRST_REV'] ?>
+
 	<? $this->EndViewTarget(); ?>
 <? endif; ?>
