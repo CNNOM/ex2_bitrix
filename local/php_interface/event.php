@@ -14,7 +14,6 @@ AddEventHandler(
     "OnAfterIBlockElementUpdate",
     array("Event", "OnAfterIBlockElementUpdateHandler")
 );
-
 AddEventHandler("main", "OnBeforeUserUpdate", array("Event", "OnBeforeUserUpdateHandler"));
 AddEventHandler("main", "OnAfterUserUpdate", array("Event", "OnAfterUserUpdateHandler"));
 
@@ -114,55 +113,53 @@ class Event
     public static function OnBeforeUserUpdateHandler(&$arFields)
     {
         global $APPLICATION;
+
         $arUser = CUser::GetList(
             ($by = 'id'),
-            ($order = 'desc'),
+            ($order = 'asc'),
             [
                 'ID' => $arFields['ID']
             ],
             [
                 'FIELDS' => ['ID'],
                 'SELECT' => ['UF_USER_CLASS_3']
-            ]
-        )->Fetch();
+            ],
+        )->fetch();
 
-        Event::$data['OLD_USER_CLASS'][$arFields['ID']] = $arUser['UF_USER_CLASS_3'];
+        Event::$data['OLD_CLASS'][$arFields['ID']] = $arUser['UF_USER_CLASS_3'];
     }
+
     public static function OnAfterUserUpdateHandler(&$arFields)
     {
         global $APPLICATION;
+        $old_class = Event::$data['OLD_CLASS'][$arFields['ID']];
+        $new_class = $arFields['UF_USER_CLASS_3'];
 
-        $old_class_user = Event::$data['OLD_USER_CLASS'][$arFields['ID']];
-        $new_class_user = $arFields['UF_USER_CLASS_3'];
 
-        if ($old_class_user) {
-            $rsGender = CUserFieldEnum::GetList(
+        if ($old_class) {
+            $rrvd = CUserFieldEnum::GetList(
                 [],
-                [
-                    'ID' => $old_class_user,
-                ],
+                ['ID' => $old_class]
             )->fetch();
-            $old_class_user = $rsGender['VALUE'];
+            $old_class = $rrvd['VALUE'];
         } else {
-            $old_class_user = Loc::getMessage('NOT_CLASS');
+            $old_class = Loc::getMessage('NOT_CLASSS');
         }
 
-        if ($new_class_user) {
-            $rsGender = CUserFieldEnum::GetList(
+        if ($new_class) {
+            $rrvd = CUserFieldEnum::GetList(
                 [],
-                [
-                    'ID' => $new_class_user,
-                ],
+                ['ID' => $new_class]
             )->fetch();
-            $new_class_user = $rsGender['VALUE'];
+            $new_class = $rrvd['VALUE'];
         } else {
-            $new_class_user = Loc::getMessage('NOT_CLASS');
+            $new_class = Loc::getMessage('NOT_CLASSS');
         }
 
-        if ($old_class_user != $new_class_user) {
+        if ($new_class != $old_class) {
             $mess = [
-                'OLD_USER_CLASS' => $old_class_user,
-                'NEW_USER_CLASS' => $new_class_user,
+                'OLD_USER_CLASS' => $old_class,
+                'NEW_USER_CLASS' => $new_class,
             ];
 
             CEvent::Send(
