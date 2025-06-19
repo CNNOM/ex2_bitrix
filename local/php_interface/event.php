@@ -15,6 +15,10 @@ AddEventHandler(
     array("Event", "OnAfterIBlockElementUpdateHandler")
 );
 
+AddEventHandler("main", "OnBeforeUserUpdate", array("Event", "OnBeforeUserUpdateHandler"));
+AddEventHandler("main", "OnAfterUserUpdate", array("Event", "OnAfterUserUpdateHandler"));
+
+
 use Bitrix\Main\Localization\Loc;
 
 Loc::loadMessages(__FILE__);
@@ -104,6 +108,68 @@ class Event
                     'DESCRIPTION' => $mess,
                 ]);
             }
+        }
+    }
+
+    public static function OnBeforeUserUpdateHandler(&$arFields)
+    {
+        global $APPLICATION;
+        $arUser = CUser::GetList(
+            ($by = 'id'),
+            ($order = 'desc'),
+            [
+                'ID' => $arFields['ID']
+            ],
+            [
+                'FIELDS' => ['ID'],
+                'SELECT' => ['UF_USER_CLASS_3']
+            ]
+        )->Fetch();
+
+        Event::$data['OLD_USER_CLASS'][$arFields['ID']] = $arUser['UF_USER_CLASS_3'];
+    }
+    public static function OnAfterUserUpdateHandler(&$arFields)
+    {
+        global $APPLICATION;
+
+        $old_class_user = Event::$data['OLD_USER_CLASS'][$arFields['ID']];
+        $new_class_user = $arFields['UF_USER_CLASS_3'];
+
+        if ($old_class_user) {
+            $rsGender = CUserFieldEnum::GetList(
+                [],
+                [
+                    'ID' => $old_class_user,
+                ],
+            )->fetch();
+            $old_class_user = $rsGender['VALUE'];
+        } else {
+            $old_class_user = Loc::getMessage('NOT_CLASS');
+        }
+
+        if ($new_class_user) {
+            $rsGender = CUserFieldEnum::GetList(
+                [],
+                [
+                    'ID' => $new_class_user,
+                ],
+            )->fetch();
+            $new_class_user = $rsGender['VALUE'];
+        } else {
+            $new_class_user = Loc::getMessage('NOT_CLASS');
+        }
+
+        if ($old_class_user != $new_class_user) {
+            $mess = [
+                'OLD_USER_CLASS' => $old_class_user,
+                'NEW_USER_CLASS' => $new_class_user,
+            ];
+
+            CEvent::Send(
+                'EX2_AUTHOR_INFO_4',
+                SITE_ID,
+                $mess
+            );
         }
     }
 }
