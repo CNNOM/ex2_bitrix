@@ -21,7 +21,7 @@ AddEventHandler('main', 'OnBeforeEventSend', array("Event", "OnBeforeEventSendHa
 
 AddEventHandler("search", "BeforeIndex", array("Event", "BeforeIndexHandler"));
 
-AddEventHandler("main", "OnBuildGlobalMenu", array("Event", "OnBuildGlobalMenuHandler"));
+AddEventHandler("main", "OnBuildGlobalMenu", ['Event', 'OnBuildGlobalMenuHandler']);
 
 
 use Bitrix\Main\Localization\Loc;
@@ -261,41 +261,42 @@ class Event
 
     public static function OnBuildGlobalMenuHandler(&$aGlobalMenu, &$aModuleMenu)
     {
-
         global $APPLICATION;
         global $USER;
+        if (in_array(UF_USER_Group_ID, $USER->GetUserGroupArray())) {
 
-        if (in_array(USER_GROUP_ID, $USER->GetUserGroupArray())) {
             if (array_key_exists('global_menu_content', $aGlobalMenu)) {
-                $myGlobalMenu['global_menu_content'] = $aGlobalMenu['global_menu_content'];
+                $myaGlobalMenu['global_menu_content'] = $aGlobalMenu['global_menu_content'];
             }
+
             $myaModuleMenu = [];
-            foreach ($aModuleMenu as $key => $value) {
-                if ($value['parent_menu'] == 'global_menu_content') {
-                    $myaModuleMenu[] = $value;
+            foreach ($aModuleMenu as $key => $item) {
+                if ($item['parent_menu'] == 'global_menu_content') {
+                    $myaModuleMenu[] = $item;
                 }
             }
-
-            $myGlobalMenu['global_menu_castom'] = [
-                'menu_id' => 'castom',
+            $myaGlobalMenu['global_menu_custom'] = [
+                'menu_id' => 'custom',
                 'text' => 'Быстрый доступ',
                 'title' => 'Быстрый доступ',
                 'sort' => 100,
-                'items_id' => 'global_menu_castom',
+                'items_id' => 'global_menu_custom',
                 'items' => [
                     [
                         'text' => 'Ссылка 1',
-                        'url' =>  'https://test1',
+                        'url' => 'https://test1/',
                     ],
                     [
                         'text' => 'Ссылка 2',
-                        'url' =>  'https://test2',
+                        'url' => 'https://test2/',
                     ],
                 ],
             ];
 
-            $aGlobalMenu = $myGlobalMenu;
+            $aGlobalMenu = $myaGlobalMenu;
             $aModuleMenu = $myaModuleMenu;
+
+
         }
     }
 }
