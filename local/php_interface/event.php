@@ -2,10 +2,13 @@
 
 use Bitrix\Main\Localization\Loc;
 
-AddEventHandler("iblock", "OnBeforeIBlockElementAdd", array("MyClass", "OnBeforeIBlockElementAddHandler"));
+AddEventHandler("iblock", "OnBeforeIBlockElementAdd", array("Event", "OnBeforeIBlockElementAddHandler"));
 AddEventHandler("iblock", "OnBeforeIBlockElementUpdate", array("Event", "OnBeforeIBlockElementUpdateHandler"));
-
 AddEventHandler("iblock", "OnAfterIBlockElementUpdate", array("Event", "OnAfterIBlockElementUpdateHandler"));
+
+AddEventHandler("main", "OnBeforeUserUpdate", array("Event", "OnBeforeUserUpdateHandler"));
+AddEventHandler("main", "OnAfterUserUpdate", array("Event", "OnAfterUserUpdateHandler"));
+
 
 
 Loc::loadMessages(__FILE__);
@@ -59,7 +62,6 @@ class Event
             Event::$data['OLD_AUTHOR'][$arFields['ID']] = $old_class;
         }
     }
-
     public static function OnAfterIBlockElementUpdateHandler(&$arFields)
     {
         global $APPLICATION;
@@ -94,6 +96,68 @@ class Event
                 'AUDIT_TYPE_ID' => '«ex2_590»',
                 'DESCRIPTION' => $mess,
             ]);
+        }
+    }
+
+
+    public static function OnBeforeUserUpdateHandler(&$arFields)
+    {
+        $arUserItem = CUser::GetList(
+            ($by = 'id'),
+            ($order = 'asc'),
+            [
+                'ID' => $arFields['ID'],
+            ],
+            [
+                'FIELDS' => ['ID'],
+                'SELECT' => ['UF_USER_CLASS_5'],
+            ],
+        )->fetch();
+
+        Event::$data['OLD_CLASS'][$arFields['ID']] = $arUserItem['UF_USER_CLASS_5'];
+    }
+    public static function OnAfterUserUpdateHandler(&$arFields)
+    {
+        global $APPLICATION;
+        $new_class = $arFields['UF_USER_CLASS_5'];
+        $old_class = Event::$data['OLD_CLASS'][$arFields['ID']];
+
+        if ($new_class) {
+            $arProp = CUserFieldEnum::GetList(
+                [],
+                [
+                    'ID' => $new_class,
+                    'USER_FIELD_ID' => ID_UF_USER_CLASS_5,
+                ],
+            )->fetch();
+            $new_class = $arProp['VALUE'];
+        } else {
+            $new_class =  Loc::GetMessage('NOT_CLASS');
+        }
+
+        if ($old_class) {
+            $arProp = CUserFieldEnum::GetList(
+                [],
+                [
+                    'ID' => $old_class,
+                    'USER_FIELD_ID' => ID_UF_USER_CLASS_5,
+                ],
+            )->fetch();
+            $old_class = $arProp['VALUE'];
+        } else {
+            $old_class =  Loc::GetMessage('NOT_CLASS');
+        }
+
+        if ($old_class != $new_class) {
+            $mess = [
+                'OLD_USER_CLASS' => $old_class,
+                'NEW_USER_CLASS' => $new_class,
+            ];
+            CEvent::Send(
+                'EX2_AUTHOR_INFO_TEST_5',
+                SITE_ID,
+                $mess
+            );
         }
     }
 }
