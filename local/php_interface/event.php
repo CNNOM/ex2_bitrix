@@ -17,6 +17,8 @@ AddEventHandler(
 AddEventHandler("main", "OnBeforeUserUpdate", array("Event", "OnBeforeUserUpdateHandler"));
 AddEventHandler("main", "OnAfterUserUpdate", array("Event", "OnAfterUserUpdateHandler"));
 
+AddEventHandler('main', 'OnBeforeEventSend', array("Event", "OnBeforeEventSendHandler"));
+
 
 use Bitrix\Main\Localization\Loc;
 
@@ -109,7 +111,6 @@ class Event
             }
         }
     }
-
     public static function OnBeforeUserUpdateHandler(&$arFields)
     {
         global $APPLICATION;
@@ -128,7 +129,6 @@ class Event
 
         Event::$data['OLD_CLASS'][$arFields['ID']] = $arUser['UF_USER_CLASS_3'];
     }
-
     public static function OnAfterUserUpdateHandler(&$arFields)
     {
         global $APPLICATION;
@@ -168,5 +168,36 @@ class Event
                 $mess
             );
         }
+    }
+
+    public static function OnBeforeEventSendHandler($arFields, $arTemplate)
+    {
+        global $APPLICATION;
+        $user = CUser::GetList(
+            ($by = 'id'),
+            ($order = 'asc'),
+            [
+                'ID' => $arFields['USER_ID']
+            ],
+            [
+                'FETCH' => ['ID'],
+                'SELECT' => ['UF_AUTHOR_STATUS_3', 'UF_USER_CLASS_3'],
+            ],
+        )->fetch();
+
+        if ($user['UF_USER_CLASS_3']) {
+            $arProp = CUserFieldEnum::GetList(
+                [],
+                [
+                    'ID' => $user['UF_USER_CLASS_3'],
+                    'USER_FIELD_ID' => UF_USER_CLASS_3_ID
+                ]
+            )->fetch();
+            $class = $arProp['VALUE'];
+        } else {
+            $class = Loc::getMessage('NOT_CLASS');
+        }
+
+        $arFields['CLASS'] = $class;
     }
 }
