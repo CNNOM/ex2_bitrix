@@ -170,34 +170,34 @@ class Event
         }
     }
 
-    public static function OnBeforeEventSendHandler($arFields, $arTemplate)
+    public static function OnBeforeEventSendHandler(&$arFields, &$arTemplate)
     {
         global $APPLICATION;
-        $user = CUser::GetList(
+
+        $arUser = CUser::GetList(
             ($by = 'id'),
             ($order = 'asc'),
             [
-                'ID' => $arFields['USER_ID']
+                'ID' => $arFields['ID']
             ],
             [
-                'FETCH' => ['ID'],
-                'SELECT' => ['UF_AUTHOR_STATUS_3', 'UF_USER_CLASS_3'],
+                'FIELDS' => ['ID'],
+                'SELECT' => ['UF_USER_CLASS_3'],
             ],
         )->fetch();
 
-        if ($user['UF_USER_CLASS_3']) {
-            $arProp = CUserFieldEnum::GetList(
+        if ($arUser['UF_USER_CLASS_3']) {
+            $ar = CUserFieldEnum::GetList(
                 [],
                 [
-                    'ID' => $user['UF_USER_CLASS_3'],
-                    'USER_FIELD_ID' => UF_USER_CLASS_3_ID
+                    'ID' => $arUser['UF_USER_CLASS_3'],
+                    'USER_FIELD_ID' => UF_USER_CLASS_3_ID,
                 ]
             )->fetch();
-            $class = $arProp['VALUE'];
+            $class = $ar['VALUE'];
         } else {
             $class = Loc::getMessage('NOT_CLASS');
         }
-
         $arFields['CLASS'] = $class;
     }
 }
