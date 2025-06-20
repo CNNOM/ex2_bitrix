@@ -11,6 +11,8 @@ AddEventHandler("main", "OnAfterUserUpdate", array("Event", "OnAfterUserUpdateHa
 
 AddEventHandler('main', 'OnBeforeEventSend', array("Event", "OnBeforeEventSendHandler"));
 
+AddEventHandler("search", "BeforeIndex", array("Event", "BeforeIndexHandler"));
+
 
 Loc::loadMessages(__FILE__);
 class Event
@@ -195,5 +197,58 @@ class Event
         }
 
         $arFields['CLASS'] = $userClass;
+    }
+
+
+
+    public static function BeforeIndexHandler($arFields)
+    {
+        global $APPLICATION;
+        if ($arFields['PARAM2'] == REV_IBLOCK_ID && $arFields['MODULE_ID'] == 'iblock') {
+
+            $arRevItem = CIBlockElement::GetList(
+                ['SORT' => 'ASC'],
+                [
+                    'ACTIVE' => 'Y',
+                    'ID' => $arFields['ITEM_ID'],
+                    'IBLOCK_ID' => $arFields['PARAM2'],
+                ],
+                false,
+                false,
+                ['ID', 'IBLOCK_ID', 'PROPERTY_AUTHOR'],
+            )->fetch();
+
+            if ($arRevItem['PROPERTY_AUTHOR_VALUE']) {
+                $arUserItem = CUser::GetList(
+                    ($by = 'id'),
+                    ($order = 'asc'),
+                    [
+                        'ID' => $arRevItem['PROPERTY_AUTHOR_VALUE'],
+                    ],
+                    [
+                        'FIELDS' => ['ID'],
+                        'SELECT' => ['UF_USER_CLASS_5'],
+                    ],
+                )->fetch();
+
+                if ($arUserItem['UF_USER_CLASS_5']) {
+                    $arProp = CUserFieldEnum::GetList(
+                        [],
+                        [
+                            'ID' => $arUserItem['UF_USER_CLASS_5'],
+                            'USER_FIELD_ID' => ID_UF_USER_CLASS_5,
+                        ],
+                    )->fetch();
+                    $class = $arProp['VALUE'];
+                } else {
+                    $class = Loc::getMessage('NOT_CLASS');
+                }
+            } else {
+                $class = Loc::getMessage('NOT_AUTHOR');
+            }
+
+            $arFields['TITLE'] = $arFields['TITLE'] . ' - ' . $class;
+        }
+        return $arFields;
     }
 }
