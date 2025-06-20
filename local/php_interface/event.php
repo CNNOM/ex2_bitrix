@@ -19,6 +19,7 @@ AddEventHandler("main", "OnAfterUserUpdate", array("Event", "OnAfterUserUpdateHa
 
 AddEventHandler('main', 'OnBeforeEventSend', array("Event", "OnBeforeEventSendHandler"));
 
+AddEventHandler("search", "BeforeIndex", array("Event", "BeforeIndexHandler"));
 
 use Bitrix\Main\Localization\Loc;
 
@@ -169,7 +170,6 @@ class Event
             );
         }
     }
-
     public static function OnBeforeEventSendHandler(&$arFields, &$arTemplate)
     {
         global $APPLICATION;
@@ -199,5 +199,62 @@ class Event
             $class = Loc::getMessage('NOT_CLASS');
         }
         $arFields['CLASS'] = $class;
+    }
+
+    public static function BeforeIndexHandler($arFields)
+    {
+        global $APPLICATION;
+        if ($arFields['PARAM2'] == REV_IBLOCK_ID && $arFields['MODULE_ID'] == 'iblock') {
+
+
+            $ar = CIBlockElement::GetList(
+                ['SORT' => 'ASC'],
+                [
+                    'ID' => $arFields['ITEM_ID'],
+                    'IBLOCK_ID' => $arFields['PARAM2'],
+                ],
+                false,
+                false,
+                [
+                    'ID',
+                    'IBLOCK_ID',
+                    'PROPERTY_AUTHOR'
+                ],
+            )->fetch();
+
+            if ($ar['PROPERTY_AUTHOR_VALUE']) {
+                $arUser = CUSer::GetList(
+                    ($by = 'id'),
+                    ($order = 'asc'),
+                    [
+                        'ID' => $ar['PROPERTY_AUTHOR_VALUE']
+                    ],
+                    [
+                        'FIELDS' => ['ID'],
+                        'SELECT' => ['UF_USER_CLASS_3'],
+                    ],
+                )->fetch();
+
+                if ($arUser['UF_USER_CLASS_3']) {
+                    $arProp = CUserFieldEnum::GetList(
+                        [],
+                        [
+                            'ID' => $arUser['UF_USER_CLASS_3'],
+                            'USER_FIELD_ID' => UF_USER_CLASS_3_ID,
+                        ],
+                    )->fetch();
+                    $userClass = $arProp['VALUE'];
+                } else {
+                    $userClass = Loc::getMessage('NOT_CLASS');
+                }
+            } else {
+                $userClass = Loc::getMessage('NOT_CLASS');
+            }
+
+            $arFields['TITLE'] = $arFields['TITLE'] . ' - ' . $userClass;
+
+        }
+
+        return $arFields;
     }
 }
