@@ -13,6 +13,7 @@ AddEventHandler('main', 'OnBeforeEventSend', array("Event", "OnBeforeEventSendHa
 
 AddEventHandler("search", "BeforeIndex", array("Event", "BeforeIndexHandler"));
 
+AddEventHandler("main", "OnBuildGlobalMenu", array("Event", "OnBuildGlobalMenuHandler"));
 
 Loc::loadMessages(__FILE__);
 class Event
@@ -102,7 +103,6 @@ class Event
         }
     }
 
-
     public static function OnBeforeUserUpdateHandler(&$arFields)
     {
         $arUserItem = CUser::GetList(
@@ -164,7 +164,6 @@ class Event
         }
     }
 
-
     public static function OnBeforeEventSendHandler(&$arFields, &$arTemplate)
     {
         global $APPLICATION;
@@ -198,8 +197,6 @@ class Event
 
         $arFields['CLASS'] = $userClass;
     }
-
-
 
     public static function BeforeIndexHandler($arFields)
     {
@@ -250,5 +247,45 @@ class Event
             $arFields['TITLE'] = $arFields['TITLE'] . ' - ' . $class;
         }
         return $arFields;
+    }
+
+    public static function OnBuildGlobalMenuHandler(&$aGlobalMenu, &$aModuleMenu)
+    {
+        global $APPLICATION, $USER;
+
+        if (in_array(USER_UPDATE_GROUP, $USER->GetUserGroupArray())) {
+
+            if (array_key_exists('global_menu_content', $aGlobalMenu)) {
+                $myaGlobalMenu['global_menu_content'] = $aGlobalMenu['global_menu_content'];
+            }
+
+            $myaModuleMenu = [];
+            foreach ($aModuleMenu as $key => $item) {
+                if ($item['parent_menu'] == 'global_menu_content') {
+                    $myaModuleMenu[] = $item;
+                }
+            }
+
+            $myaGlobalMenu['global_menu_custom'] = [
+                'menu_id' => 'global_menu_custom',
+                'text' => 'Быстрый доступ',
+                'title' => 'Быстрый доступ',
+                'sort' => 100,
+                'items_id' => 'global_menu_custom',
+                'items' => [
+                    [
+                        'text' => 'Ссылка 1',
+                        'url' => 'https://test1/',
+                    ],
+                    [
+                        'text' => 'Ссылка 2',
+                        'url' => 'https://test2/',
+                    ],
+                ],
+            ];
+
+            $aGlobalMenu = $myaGlobalMenu;
+            $aModuleMenu = $myaModuleMenu;
+        }
     }
 }
