@@ -13,6 +13,8 @@ AddEventHandler("main", "OnAfterUserUpdate", array("Event", "OnAfterUserUpdateHa
 
 AddEventHandler('main', 'OnBeforeEventSend', array("Event", "OnBeforeEventSendHandler"));
 
+AddEventHandler("search", "BeforeIndex", array("Event", "BeforeIndexHandler"));
+
 
 class Event
 {
@@ -203,5 +205,57 @@ class Event
         }
 
         $arFields['CLASS'] = $class;
+    }
+
+    public static function BeforeIndexHandler($arFields)
+    {
+        global $APPLICATION;
+        if ($arFields['MODULE_ID'] == 'iblock' && $arFields['PARAM2'] == REV_IBLOCK_ID) {
+
+            $arRewList = CIBlockElement::GetList(
+                ['SORT' => 'ASC'],
+                [
+                    'IBLOCK_ID' => REV_IBLOCK_ID,
+                    'ACTIVE' => "Y",
+                    'ID' => $arFields['ITEM_ID'],
+                ],
+                false,
+                false,
+                ['ID', 'NAME', 'IBLOCK_ID', 'PROPERTY_AUTHOR', 'PROPERTY_PRODUCT'],
+            )->fetch();
+
+            if ($arRewList['PROPERTY_AUTHOR_VALUE']) {
+                $arUserList = CUser::getList(
+                    ($by = 'id'),
+                    ($order = 'asc'),
+                    [
+                        'ID' => $arRewList['PROPERTY_AUTHOR_VALUE'],
+                    ],
+                    [
+                        'FIELDS' => ['ID'],
+                        'SELECT' => ['UF_USER_CLASS_6']
+                    ],
+                )->fetch();
+                if ($arUserList['UF_USER_CLASS_6']) {
+                    $arEnum = CUserFieldEnum::GetList(
+                        [],
+                        [
+                            'ID' => $arUserList['UF_USER_CLASS_6'],
+                            'USER_FIELD_ID' => UF_USER_CLASS_6_ID
+                        ]
+                    )->fetch();
+                    $class = $arEnum['VALUE'];
+                } else {
+                    $class = Loc::getMessage('NOT_CLASS');
+                }
+            } else {
+                $class = Loc::getMessage('NOT_AUTHOR');
+            }
+
+
+            $arFields['TITLE'] = $arFields['TITLE'].' ~ ' . $class;
+        }
+
+        return $arFields;
     }
 }
