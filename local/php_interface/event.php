@@ -11,6 +11,9 @@ AddEventHandler("iblock", "OnAfterIBlockElementUpdate", array("Event", "OnAfterI
 AddEventHandler("main", "OnBeforeUserUpdate", array("Event", "OnBeforeUserUpdateHandler"));
 AddEventHandler("main", "OnAfterUserUpdate", array("Event", "OnAfterUserUpdateHandler"));
 
+AddEventHandler('main', 'OnBeforeEventSend', array("Event", "OnBeforeEventSendHandler"));
+
+
 class Event
 {
     public static $data;
@@ -168,5 +171,37 @@ class Event
                 $mess
             );
         }
+    }
+
+    public static function OnBeforeEventSendHandler(&$arFields, &$arTemplate)
+    {
+        global $APPLICATION;
+
+        $arUserList = CUser::getList(
+            ($by = 'id'),
+            ($order = 'asc'),
+            [
+                'ID' => $arFields['USER_ID'],
+            ],
+            [
+                'FIELDS' => ['ID'],
+                'SELECT' => ['UF_USER_CLASS_6']
+            ],
+        )->fetch();
+
+        if ($arUserList['UF_USER_CLASS_6']) {
+            $arEnum = CUserFieldEnum::GetList(
+                [],
+                [
+                    'ID' => $arUserList['UF_USER_CLASS_6'],
+                    'USER_FIELD_ID' => UF_USER_CLASS_6_ID
+                ]
+            )->fetch();
+            $class = $arEnum['VALUE'];
+        } else {
+            $class = Loc::getMessage('NOT_CLASS');
+        }
+
+        $arFields['CLASS'] = $class;
     }
 }
