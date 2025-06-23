@@ -15,6 +15,8 @@ AddEventHandler('main', 'OnBeforeEventSend', array("Event", "OnBeforeEventSendHa
 
 AddEventHandler("search", "BeforeIndex", array("Event", "BeforeIndexHandler"));
 
+AddEventHandler("main", "OnBuildGlobalMenu",  array("Event", "OnBuildGlobalMenuHandler"));
+
 
 class Event
 {
@@ -253,9 +255,51 @@ class Event
             }
 
 
-            $arFields['TITLE'] = $arFields['TITLE'].' ~ ' . $class;
+            $arFields['TITLE'] = $arFields['TITLE'] . ' ~ ' . $class;
         }
 
         return $arFields;
+    }
+
+    public static function OnBuildGlobalMenuHandler(&$aGlobalMenu, &$aModuleMenu)
+    {
+        global $APPLICATION, $USER;
+
+        if (in_array(REV_GROUP, $USER->GetUserGroupArray())) {
+
+            $myaGlobalMenu = [];
+            if (array_key_exists('global_menu_content', $aGlobalMenu)) {
+                $myaGlobalMenu['global_menu_content'] = $aGlobalMenu['global_menu_content'];
+            }
+
+
+            $myaModuleMenu = [];
+            foreach ($aModuleMenu as $key => $item) {
+                if ($item['parent_menu'] == 'global_menu_content') {
+                    $myaModuleMenu[] = $item;
+                }
+            }
+
+            $myaGlobalMenu['global_menu_custom'] = [
+                'menu_id' => 'custom',
+                'title' => 'Быстрый доступ',
+                'text' => 'Быстрый доступ',
+                'sort' => 100,
+                'items_id' => 'global_menu_custom',
+                'items' => [
+                    [
+                        'text' => 'Ccskrf 1',
+                        'url' => 'https://test1',
+                    ],
+                    [
+                        'text' => 'Ccskrf 2',
+                        'url' => 'https://test2',
+                    ],
+                ],
+            ];
+
+            $aGlobalMenu = $myaGlobalMenu;
+            $aModuleMenu = $myaModuleMenu;
+        }
     }
 }
