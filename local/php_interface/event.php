@@ -1,0 +1,108 @@
+<?
+
+use Bitrix\Main\Localization\Loc;
+
+Loc::loadMessages(__FILE__);
+
+AddEventHandler("iblock", "OnBeforeIBlockElementAdd", array("Event", "OnBeforeIBlockElementAddHandler"));
+AddEventHandler("iblock", "OnBeforeIBlockElementUpdate", array("Event", "OnBeforeIBlockElementUpdateHandler"));
+AddEventHandler("iblock", "OnAfterIBlockElementUpdate", array("Event", "OnAfterIBlockElementUpdateHandler"));
+class Event
+{
+    public static $data;
+    public static function OnBeforeIBlockElementAddHandler(&$arFields)
+    {
+        global $APPLICATION;
+        if ($arFields['IBLOCK_ID'] == REV_IBLOCK_ID) {
+
+            if (str_contains($arFields['PREVIEW_TEXT'], '#del#')) {
+                $arFields['PREVIEW_TEXT'] = str_replace('#del#', '', $arFields['PREVIEW_TEXT']);
+            }
+
+            if (mb_strlen($arFields['PREVIEW_TEXT']) < 5) {
+                $APPLICATION->ThrowException('долбоёб');
+                return false;
+            }
+        }
+    }
+    public static function OnBeforeIBlockElementUpdateHandler(&$arFields)
+    {
+        global $APPLICATION;
+        if ($arFields['IBLOCK_ID'] == REV_IBLOCK_ID) {
+
+            if (str_contains($arFields['PREVIEW_TEXT'], '#del#')) {
+                $arFields['PREVIEW_TEXT'] = str_replace('#del#', '', $arFields['PREVIEW_TEXT']);
+            }
+
+            if (mb_strlen($arFields['PREVIEW_TEXT']) < 5) {
+                $APPLICATION->ThrowException('долбоёб');
+                return false;
+            }
+
+            $arRewList = CIBlockElement::GetList(
+                ['SORT' => 'ASC'],
+                [
+                    'IBLOCK_ID' => REV_IBLOCK_ID,
+                    'ACTIVE' => "Y",
+                    'ID' => $arFields['ID'],
+                ],
+                false,
+                false,
+                ['ID', 'NAME', 'IBLOCK_ID', 'PROPERTY_AUTHOR'],
+            )->fetch();
+
+
+            if ($arRewList['PROPERTY_AUTHOR_VALUE']) {
+                $author = $arRewList['PROPERTY_AUTHOR_VALUE'];
+            } else {
+                $author = Loc::getMessage('NOT_AUTHOR');
+            }
+
+            Event::$data['OLD_CLASS'][$arFields['ID']] = $author;
+        }
+    }
+    public static function OnAfterIBlockElementUpdateHandler(&$arFields)
+    {
+        global $APPLICATION;
+        if ($arFields['IBLOCK_ID'] == REV_IBLOCK_ID) {
+
+            $arRewList = CIBlockElement::GetList(
+                ['SORT' => 'ASC'],
+                [
+                    'IBLOCK_ID' => REV_IBLOCK_ID,
+                    'ACTIVE' => "Y",
+                    'ID' => $arFields['ID'],
+                ],
+                false,
+                false,
+                ['ID', 'NAME', 'IBLOCK_ID', 'PROPERTY_AUTHOR'],
+            )->fetch();
+
+
+            if ($arRewList['PROPERTY_AUTHOR_VALUE']) {
+                $new_AUTHOR = $arRewList['PROPERTY_AUTHOR_VALUE'];
+            } else {
+                $new_AUTHOR = Loc::getMessage('NOT_AUTHOR');
+            }
+
+            $old_AUTHOR = Event::$data['OLD_CLASS'][$arFields['ID']];
+
+            if ($old_AUTHOR != $new_AUTHOR) {
+                $mess = Loc::getMessage(
+                    'INFO_UPDATE_EL',
+                    [
+                        '#ID#' => $arFields['ID'],
+                        '#new#' => $new_AUTHOR,
+                        '#old#' => $old_AUTHOR,
+                    ]
+                );
+                CEventLog::Add([
+                    'AUDIT_TYPE_ID' => '«ex2_590 test 6',
+                    'DESCRIPTION' => $mess,
+                ]);
+            }
+        }
+    }
+
+    
+}
