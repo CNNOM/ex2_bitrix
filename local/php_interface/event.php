@@ -11,6 +11,9 @@ AddEventHandler("iblock", "OnAfterIBlockElementUpdate", array("Event", "OnAfterI
 AddEventHandler("main", "OnBeforeUserUpdate", array("Event", "OnBeforeUserUpdateHandler"));
 AddEventHandler("main", "OnAfterUserUpdate", array("Event", "OnAfterUserUpdateHandler"));
 
+AddEventHandler("search", "BeforeIndex", array("Event", "BeforeIndexHandler"));
+
+
 class Event
 {
     public static $data;
@@ -84,7 +87,7 @@ class Event
         } else {
             $new_class = Loc::getMessage('NOT_AUTHOR');
         }
-        $old_class =  Event::$data['OLD_CLASS'][$arFields['ID']];
+        $old_class = Event::$data['OLD_CLASS'][$arFields['ID']];
 
         if ($old_class != $new_class) {
             $mess = Loc::getMessage('INFO', [
@@ -170,5 +173,42 @@ class Event
                 $mess
             );
         }
+    }
+
+    public static function BeforeIndexHandler($arFields)
+    {
+        global $APPLICATION;
+        if ($arFields["MODULE_ID"] == "iblock" && $arFields["PARAM2"] == REV_IBLOCK_ID) {
+
+            $arRev = CIBlockElement::GetList(
+                ['SORT' => 'ASC'],
+                [
+                    'IBLOCK_ID' => REV_IBLOCK_ID,
+                    'ID' => $arFields['ITEM_ID'],
+                    'ACTIVE' => 'Y',
+                ],
+                false,
+                false,
+                ['ID', 'IBLOCK_ID', 'NAME', 'PROPERTY_AUTHOR'],
+            )->fetch();
+
+            if ($arRev['PROPERTY_AUTHOR_VALUE']) {
+                $arUsers = CUser::GetList(
+                    ($by = 'id'),
+                    ($order = 'asc'),
+                    [
+                        'ID' => $arRev['PROPERTY_AUTHOR_VALUE'],
+                    ],
+                    [],
+                )->fetch();
+                $nameAuthor = $arUsers['LOGIN'];
+            } else {
+                $nameAuthor = Loc::getMessage('NOT_AUTHOR');
+            }
+
+            $arFields['TITLE'] = $arFields['TITLE'] . ' - ' . $nameAuthor . ' - ' . $arRev['PROPERTY_AUTHOR_VALUE']. ' - ' . $arRev['ID'];
+        }
+        return $arFields;
+
     }
 }
