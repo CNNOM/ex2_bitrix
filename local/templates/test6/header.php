@@ -7,6 +7,7 @@ IncludeTemplateLangFile(__FILE__);
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru" lang="ru">
 
 <head>
+	<meta name="ex2_meta_test_7" content="<?$APPLICATION->ShowProperty('ex2_meta_test_7')?>" >
 	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 	<? $APPLICATION->ShowHead(); ?>
 	<link href="<?= SITE_TEMPLATE_PATH ?>/common.css" type="text/css" rel="stylesheet" />
