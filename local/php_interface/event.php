@@ -158,25 +158,12 @@ class Event
             $new_status = Loc::getMessage('NOT_STATUS');
         }
 
-        $APPLICATION->RestartBuffer();
-        echo '<pre>';
-        print_r($old_status);
-        echo '</pre>';
-        echo '<pre>';
-        print_r($new_status);
-        echo '</pre>';
-        exit();
         if ($new_status != $old_status) {
             $mess = [
                 '#OLD_UF_STATUS#' => $old_status,
                 '#NEW_UF_STATUS#' => $new_status,
             ];
 
-
-            CEventLog::Add([
-                'AUDIT_TYPE_ID' => '«ex2_590»',
-                'DESCRIPTION' => $old_status . ' - ' . $new_status,
-            ]);
             CEvent::Send(
                 'EX2_AUTHOR_INFO_TEST_7',
                 SITE_ID,
