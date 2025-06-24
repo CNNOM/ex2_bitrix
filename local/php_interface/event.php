@@ -13,6 +13,8 @@ AddEventHandler("main", "OnAfterUserUpdate", array("Event", "OnAfterUserUpdateHa
 
 AddEventHandler("search", "BeforeIndex", array("Event", "BeforeIndexHandler"));
 
+AddEventHandler("main", "OnBuildGlobalMenu", array("Event", "OnBuildGlobalMenuHandler"));
+
 
 class Event
 {
@@ -206,9 +208,55 @@ class Event
                 $nameAuthor = Loc::getMessage('NOT_AUTHOR');
             }
 
-            $arFields['TITLE'] = $arFields['TITLE'] . ' - ' . $nameAuthor . ' - ' . $arRev['PROPERTY_AUTHOR_VALUE']. ' - ' . $arRev['ID'];
+            $arFields['TITLE'] = $arFields['TITLE'] . ' - ' . $nameAuthor . ' - ' . $arRev['PROPERTY_AUTHOR_VALUE'] . ' - ' . $arRev['ID'];
         }
         return $arFields;
 
     }
+
+    public static function OnBuildGlobalMenuHandler(&$aGlobalMenu, &$aModuleMenu)
+    {
+        global $APPLICATION, $USER;
+        if (in_array(USER_GROUP_UPDATE_REV, $USER->GetUserGroupArray())) {
+    
+
+            $myaGlobalMenu = [];
+            if (array_key_exists('global_menu_content', $aGlobalMenu)) {
+                $myaGlobalMenu['global_menu_content'] = $aGlobalMenu['global_menu_content'];
+            }
+
+            $myaModuleMenu = [];
+            foreach ($aModuleMenu as $key => $item) {
+                if ($item['parent_menu'] == 'global_menu_content') {
+                    $myaModuleMenu[] = $item;
+                }
+            }
+
+            $myaGlobalMenu['global_menu_quick_access'] = [
+                'menu_id' => 'quick_access',
+                'sort' => 100,
+                'text' => 'Бфстрый доступ',
+                'title' => 'Бфстрый доступ',
+                'items_id' => 'global_menu_quick_access',
+                'items' => [
+                    [
+                        'text' => 'Ссфлка 1',
+                        'url' => 'https://test1',
+                    ],
+                    [
+                        'text' => 'Ссфлка 2',
+                        'url' => 'https://test2',
+                    ],
+                ],
+            ];
+
+            $aGlobalMenu = $myaGlobalMenu;
+            $aModuleMenu = $myaModuleMenu;
+
+
+        }
+
+    }
+
+
 }
