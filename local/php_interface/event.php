@@ -9,6 +9,8 @@ AddEventHandler("iblock", "OnAfterIBlockElementUpdate", array("Event", "OnAfterI
 AddEventHandler("main", "OnBeforeUserUpdate", array("Event", "OnBeforeUserUpdateHandler"));
 AddEventHandler("main", "OnAfterUserUpdate", array("Event", "OnAfterUserUpdateHandler"));
 
+AddEventHandler("search", "BeforeIndex", array("Event", "BeforeIndexHandler"));
+
 
 Loc::loadMessages(__FILE__);
 class Event
@@ -178,5 +180,44 @@ class Event
                 $mess,
             );
         }
+    }
+
+    public static function BeforeIndexHandler($arFields)
+    {
+        global $APPLICATION;
+
+        if ($arFields["MODULE_ID"] == "iblock" && $arFields['PARAM2'] == REV_IBLOCK_ID) {
+
+
+            $arRevItems = CIBlockElement::GetList(
+                ['SORT' => 'ASC'],
+                [
+                    'IBLOCK_ID' => REV_IBLOCK_ID,
+                    'ACTIVE' => 'Y',
+                    'ID' => $arFields['ITEM_ID'],
+                ],
+                false,
+                false,
+                ['ID', 'IBLOCK_ID', 'NAME', 'PROPERTY_AUTHOR'],
+            )->fetch();
+
+            if ($arRevItems['PROPERTY_AUTHOR_VALUE']) {
+                $ar = CUser::GetList(
+                    ($by = 'id'),
+                    ($order = 'asc'),
+                    [
+                        'ID' => $arRevItems['PROPERTY_AUTHOR_VALUE'],
+                    ],
+                    [
+                        'FIELDS' => ['ID', 'NAME'],
+                    ],
+                )->fetch();
+                $author = $ar['NAME'];
+            } else {
+                $author = Loc::getMessage('NOT_AUTHOR');
+            }
+            $arFields['TITLE'] = $arFields['TITLE'] . ' - ' . $author;
+        }
+        return $arFields;
     }
 }
