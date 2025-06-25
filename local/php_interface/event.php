@@ -6,6 +6,9 @@ AddEventHandler("iblock", "OnBeforeIBlockElementAdd", array("Event", "OnBeforeIB
 AddEventHandler("iblock", "OnBeforeIBlockElementUpdate", array("Event", "OnBeforeIBlockElementUpdateHandler"));
 AddEventHandler("iblock", "OnAfterIBlockElementUpdate", array("Event", "OnAfterIBlockElementUpdateHandler"));
 
+AddEventHandler("main", "OnBeforeUserUpdate", array("Event", "OnBeforeUserUpdateHandler"));
+AddEventHandler("main", "OnAfterUserUpdate", array("Event", "OnAfterUserUpdateHandler"));
+
 
 Loc::loadMessages(__FILE__);
 class Event
@@ -104,6 +107,76 @@ class Event
                     ]
                 );
             }
+        }
+    }
+
+    public static function OnBeforeUserUpdateHandler(&$arFields)
+    {
+        global $APPLICATION;
+
+        $ar = CUser::GetList(
+            ($by = 'id'),
+            ($order = 'asc'),
+            [
+                'ID' => $arFields['ID'],
+            ],
+            [
+                'FIELDS' => ['ID'],
+                'SELECT' => ['UF_AUTHOR_STATUS_8'],
+            ],
+        )->fetch();
+        Event::$data['OLD_AUTHOR'][$arFields['ID']] = $ar['UF_AUTHOR_STATUS_8'];
+    }
+    public static function OnAfterUserUpdateHandler(&$arFields)
+    {
+        $old_status = Event::$data['OLD_AUTHOR'][$arFields['ID']];
+        $new_status = $arFields['UF_AUTHOR_STATUS_8'];
+
+        if ($old_status) {
+            $arRevItems = CIBlockElement::GetList(
+                ['SORT' => 'ASC'],
+                [
+                    'IBLOCK_ID' => SATUS_IBLOCK_ID,
+                    'ACTIVE' => 'Y',
+                    'ID' => $old_status,
+                ],
+                false,
+                false,
+                ['ID', 'IBLOCK_ID', 'NAME'],
+            )->fetch();
+            $old_status = $arRevItems['NAME'];
+        } else {
+            $old_status = Loc::getMessage('NOT_STATUS');
+        }
+
+        if ($new_status) {
+            $arRevItems = CIBlockElement::GetList(
+                ['SORT' => 'ASC'],
+                [
+                    'IBLOCK_ID' => SATUS_IBLOCK_ID,
+                    'ACTIVE' => 'Y',
+                    'ID' => $new_status,
+                ],
+                false,
+                false,
+                ['ID', 'IBLOCK_ID', 'NAME'],
+            )->fetch();
+            $new_status = $arRevItems['NAME'];
+        } else {
+            $new_status = Loc::getMessage('NOT_STATUS');
+        }
+
+        if ($old_status != $new_status) {
+
+            $mess = [
+                'OLD_UF_STATUS' => $old_status,
+                'NEW_UF_STATUS' => $new_status,
+            ];
+            CEvent::Send(
+                'EX2_AUTHOR_INFO',
+                's1',
+                $mess,
+            );
         }
     }
 }
