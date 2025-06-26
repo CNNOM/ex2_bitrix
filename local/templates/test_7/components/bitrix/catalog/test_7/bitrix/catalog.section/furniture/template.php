@@ -1,4 +1,4 @@
-<? if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) die(); ?>
+<? if (!defined(constant_name: "B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) die(); ?>
 <div class="catalog-list">
 	<? if ($arParams["DISPLAY_TOP_PAGER"]): ?>
 		<?= $arResult["NAV_STRING"] ?><br />
@@ -46,6 +46,13 @@
 				<?= $arElement["PREVIEW_TEXT"] ?>
 			</div>
 
+			<?php if ($arResult['REV'][$arElement['ID']]): ?>
+				<p>Рецензии:</p>
+				<?php foreach ($arResult['REV'][$arElement['ID']] as $key => $item): ?>
+					<p><?= $item ?></p>
+				<?php endforeach; ?>
+			<?php endif; ?>
+
 			<?
 			foreach ($arElement["PRICES"] as $code => $arPrice):
 				if ($arPrice["CAN_ACCESS"]):
@@ -64,3 +71,20 @@
 		<br /><?= $arResult["NAV_STRING"] ?>
 	<? endif; ?>
 </div>
+
+<?php if ($arResult['FIRST_REV']): ?>
+	<? $this->SetViewTarget('first_rev'); ?>
+	<div id="filial-special" class="information-block">
+		<div class="top"></div>
+		<div class="information-block-inner">
+			<h3>Дополнительно</h3>
+			<div class="special-product">
+				<div class="special-product-title">
+					<?= $arResult['FIRST_REV'] ?>
+				</div>
+			</div>
+		</div>
+		<div class="bottom"></div>
+	</div>
+	<? $this->EndViewTarget(); ?>
+<?php endif; ?>
