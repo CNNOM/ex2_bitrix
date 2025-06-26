@@ -45,12 +45,6 @@
 			<div class="catalog-item-desc<?= $width < 300 ? '-float' : '' ?>">
 				<?= $arElement["PREVIEW_TEXT"] ?>
 			</div>
-			<?php if ($arResult['REV'][$arElement['ID']]): ?>
-				<p>Рецензии:</p>
-				<?php foreach ($arResult['REV'][$arElement['ID']] as $key => $item): ?>
-					<p><?= $item ?></p>
-				<?php endforeach; ?>
-			<?php endif; ?>
 
 			<?
 			foreach ($arElement["PRICES"] as $code => $arPrice):
