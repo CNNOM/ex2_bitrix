@@ -7,6 +7,9 @@ AddEventHandler("iblock", "OnBeforeIBlockElementAdd", array("Event", "OnBeforeIB
 AddEventHandler("iblock", "OnBeforeIBlockElementUpdate", array("Event", "OnBeforeIBlockElementUpdateHandler"));
 AddEventHandler("iblock", "OnAfterIBlockElementUpdate", array("Event", "OnAfterIBlockElementUpdateHandler"));
 
+AddEventHandler("main", "OnBeforeUserUpdate", array("Event", "OnBeforeUserUpdateHandler"));
+AddEventHandler("main", "OnAfterUserUpdate", array("Event", "OnAfterUserUpdateHandler"));
+
 class Event
 {
     public static $data;
@@ -109,6 +112,75 @@ class Event
                 'AUDIT_TYPE_ID' => '«ex2_590»',
                 'DESCRIPTION' => $mess
             ]);
+        }
+    }
+
+    public static function  OnBeforeUserUpdateHandler(&$arFields)
+    {
+        global $APPLICATION;
+
+
+        $res = CUser::GetList(
+            ($by = 'id'),
+            ($order = 'asc'),
+            [
+                'ID' => $arFields['ID'],
+            ],
+            [
+                'FIELDS' => ['ID'],
+                'SELECT' => ['UF_USER_CLASS']
+            ],
+        )->fetch();
+
+        Event::$data['OLD_STATUS'][$arFields['ID']] = $res['UF_USER_CLASS'];
+    }
+
+    public static function  OnAfterUserUpdateHandler(&$arFields)
+    {
+        global $APPLICATION;
+
+        $old_status = Event::$data['OLD_STATUS'][$arFields['ID']];
+        $new_status = $arFields['UF_USER_CLASS'];
+
+
+        if ($old_status) {
+            $res = CUserFieldEnum::GetList(
+                [],
+                [
+                    'ID' => $old_status,
+                    'USER_FIELD_ID' => ID_UF_USER_CLASS,
+                ],
+            )->fetch();
+            $old_status = $res['VALUE'];
+        } else {
+            $old_status = Loc::getMessage('NOT_STATUS');
+        }
+
+
+        if ($new_status) {
+            $res = CUserFieldEnum::GetList(
+                [],
+                [
+                    'ID' => $new_status,
+                    'USER_FIELD_ID' => ID_UF_USER_CLASS,
+                ],
+            )->fetch();
+            $new_status = $res['VALUE'];
+        } else {
+            $new_status = Loc::getMessage('NOT_STATUS');
+        }
+
+        if ($old_status != $new_status) {
+
+            $mess = [
+                'OLD_USER_CLASS' => $old_status,
+                'NEW_USER_CLASS' => $new_status,
+            ];
+            CEvent::Send(
+                "EX2_AUTHOR_INFO",
+                's1',
+                $mess
+            );
         }
     }
 }
